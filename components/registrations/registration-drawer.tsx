@@ -112,7 +112,7 @@ export function RegistrationDrawer({
               <Section
                 title="Product"
                 rows={[
-                  ["Product", current.registration.productTitle],
+                  ["Product", current.lineItem?.productTitle ?? current.registration.productTitle ?? "—" ],
                   ["SKU", current.lineItem?.sku ?? current.registration.sku ?? "—"],
                   ["Category", current.lineItem?.category ?? current.registration.productType ?? "—"],
                   ["Serial number", current.registration.serialNumber ?? "—"],
