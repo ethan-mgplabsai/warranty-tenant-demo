@@ -17,16 +17,17 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
   `<SignUp />` widgets, which already inherit the brand theme via `ClerkProvider appearance={{ theme: shadcn }}`
   in `app/layout.tsx`. No OTP flow — Clerk's own hosted UI handles auth strategy.
 
-## Up next
+- **Registrations list** — `app/registrations/page.tsx` + `components/registrations/*`. Turned out the live API
+  has three tiers under `/api/v1/*` (plain tenant-wide bearer-key, admin, and a customer tier pre-scoped to one
+  OTP-verified email) — see CLAUDE.md's "The API this integrates with" section. This feature uses the
+  **customer tier** (`POST /api/v1/customer/auth/send-otp` + `/verify-otp`, then `GET /api/v1/customer/registrations[/{id}]`),
+  not the plain tier this doc originally assumed, so CLAUDE.md hard rule 3's `demo_activity` filtering doesn't
+  apply here (the customer tier is already scoped server-side). Also stood up the two cross-cutting pieces below
+  (narrated console, rate limiting) since this was the first real upstream call wired in the repo, and fixed a
+  live bug in `app/layout.tsx` where the nav links were Clerk-gated (violated hard rule 6 — this flow's real gate
+  is the OTP step, not Clerk sign-in).
 
-### 2. Registrations list
-- **Prototype reference:** `design/portal-customer.html:982-1160` (5 card states: active/new, active/mid-coverage,
-  active/nearing-expiration, expired, replaced — plus the empty state), and the registration-detail drawer at
-  `design/portal-customer.html:1959-1974`.
-- **Routes:** `/registrations`.
-- **Upstream endpoints:** `GET /v1/registrations`, `GET /v1/registrations/{id}`.
-- **Hard rules that apply:** never render the raw shared-tenant list response directly — filter to the current
-  visitor's own activity via `demo_activity` before display (CLAUDE.md rule 3).
+## Up next
 
 ### 3. Registration flow
 - **Prototype reference:** `design/portal-customer.html:1161-1392` — 3-step wizard: select order → select item
@@ -49,10 +50,14 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
 - **Prototype reference:** `design/portal-customer.html:1478-1686` — 3 states (info-requested, in-review,
   fulfilled) + empty state + claim detail (timeline, info-request banner, reply form).
 - **Routes:** `/claims`, `/claims/{id}`.
-- **Upstream endpoints:** `GET /v1/claims`, `GET /v1/claims/{id}`, `POST /v1/claims/{id}/transition` (customer
-  reply on an info-requested claim).
-- **Hard rules that apply:** same shared-tenant filtering rule as registrations (rule 3), scoped by
-  `demo_activity` (rule 2).
+- **Upstream endpoints:** the live spec has both a plain-tier `GET /v1/claims`/`{id}`/`POST .../transition` and a
+  customer-tier `GET/POST /api/v1/customer/claims`, `GET /api/v1/customer/claims/{id}`,
+  `POST /api/v1/customer/claims/{id}/reply` — registrations (feature 2) went with the customer tier since it's
+  pre-scoped server-side and the visitor is already OTP-verified from that flow; likely the right precedent to
+  follow here too (reuse the existing customer session cookie rather than re-authenticating), but confirm against
+  the live spec before assuming the shape matches.
+- **Hard rules that apply:** if using the customer tier (recommended, see above), hard rule 3's `demo_activity`
+  filtering doesn't apply (already scoped by Warrantini); if using the plain tier instead, it does.
 
 ### 6. Claim filing flow
 - **Prototype reference:** `design/portal-customer.html:1687-1904` — select registration → describe issue
@@ -64,8 +69,12 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
 
 ## Cross-cutting, tackle whenever it first becomes needed
 
-- **Narrated API call console** — every write/read to `/v1/*` should render as a split-pane request/response
-  log (method, path, body, status, latency, redacted `Authorization` header, copy-as-curl/fetch). Build this once
-  the first real endpoint call is wired (likely in session 3 or 5) and reuse it everywhere after.
-- **Rate limiting** (`src/lib/rate-limit.ts`) and **`demo_activity` scoping helpers** — needed by every session
-  that writes data; build alongside whichever session hits it first, then reuse.
+- **Narrated API call console** — built in feature 2 (`components/registrations/api-console.tsx`,
+  `lib/warrantini-client.ts`). Reuse this for every subsequent feature rather than rebuilding.
+- **Rate limiting** (`lib/rate-limit.ts`) — built in feature 2 (Upstash sliding-window limiters, fails open with
+  a console warning if `UPSTASH_REDIS_REST_URL`/`TOKEN` aren't configured). Reuse `checkOtpSendRateLimit`/
+  `checkRegistrationsReadRateLimit` or add new limiter instances following the same pattern.
+- **`demo_activity` scoping helpers + Drizzle schema** — still not built. Not needed by feature 2 (customer tier
+  is pre-scoped by Warrantini itself), but required by any feature that talks to the **plain** tier or that
+  writes data (features 3, 6, and 5/4 if they end up using the plain tier) — build alongside whichever of those
+  hits it first, then reuse.

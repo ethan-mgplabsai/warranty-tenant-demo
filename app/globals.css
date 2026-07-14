@@ -60,6 +60,14 @@
   --pc-linen: #fbf8f4;
   --pc-border: #e7dfd3;
 
+  /* Registration status semantics — distinct from --pc-orange (primary CTA color) */
+  --pc-success-text: #2f7a4f;
+  --pc-success-bg: #e7f3ec;
+  --pc-warning-text: #b45309;
+  --pc-warning-bg: #fdf1e0;
+  --pc-info-text: #2563a8;
+  --pc-info-bg: #e8f1fb;
+
   --background: var(--pc-cream);
   --foreground: var(--pc-ink);
   --card: #ffffff;
@@ -95,6 +103,13 @@
 }
 
 .dark {
+  --pc-success-text: #6fcf9a;
+  --pc-success-bg: rgb(111 207 154 / 14%);
+  --pc-warning-text: #f0b35e;
+  --pc-warning-bg: rgb(240 179 94 / 14%);
+  --pc-info-text: #7bb3e8;
+  --pc-info-bg: rgb(123 179 232 / 14%);
+
   --background: var(--pc-ink);
   --foreground: var(--pc-cream);
   --card: #3d332a;

@@ -50,14 +50,12 @@ export default function RootLayout({
               </span>
             </Link>
             <nav className="flex items-center gap-5 text-sm font-semibold text-muted-foreground">
-              <Show when="signed-in">
-                <Link href="/registrations" className="transition-colors hover:text-primary">
-                  My Registrations
-                </Link>
-                <Link href="/claims" className="transition-colors hover:text-primary">
-                  My Claims
-                </Link>
-              </Show>
+              <Link href="/registrations" className="transition-colors hover:text-primary">
+                My Registrations
+              </Link>
+              <Link href="/claims" className="transition-colors hover:text-primary">
+                My Claims
+              </Link>
               <Link href="/warranty-policy" className="transition-colors hover:text-primary">
                 Warranty Policy
               </Link>
