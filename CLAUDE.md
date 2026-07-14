@@ -32,9 +32,9 @@ The live spec (`{WARRANTINI_API_BASE_URL}/api/openapi.json`) has **three distinc
 
 | Tier | Auth | Scope | Used by |
 |---|---|---|---|
-| Plain (`/api/v1/orders`, `/registrations`, `/claims`, `/products`, `/rules`) | `Authorization: Bearer <api_key>`, key format `wrnt_(live\|test)_<...>` (`process.env.DEMO_API_KEY`) | Tenant-wide — returns every visitor's data at once | Not yet used by this repo |
+| Plain (`/api/v1/orders`, `/registrations`, `/claims`, `/products`, `/rules`) | `Authorization: Bearer <api_key>`, key format `wrnt_(live\|test)_<...>` (`process.env.DEMO_API_KEY`) | Tenant-wide — returns every visitor's data at once | **Warranty Policy page** (`GET /v1/rules`, read-only — this repo's first plain-tier call). Everything else on this tier is still unused |
 | Admin (`/api/v1/admin/*`) | Same bearer scheme, admin-scoped key | Warrantini's own internal dashboard (settings, billing, Shopify sync, etc.) | Never — out of scope for this demo entirely |
-| Customer (`/api/v1/customer/*`) | OTP-derived customer JWT (`Authorization: Bearer <jwt>`, obtained via `/customer/auth/send-otp` + `/verify-otp`) | Pre-scoped server-side to one verified customer email | **Registrations list** (this repo's first wired feature) |
+| Customer (`/api/v1/customer/*`) | OTP-derived customer JWT (`Authorization: Bearer <jwt>`, obtained via `/customer/auth/send-otp` + `/verify-otp`) for most endpoints; `GET .../warranty-policy` is the one public exception — no auth at all | Pre-scoped server-side to one verified customer email (except the public policy endpoint, which is tenant-wide but not customer-specific) | **Registrations list**, **Registration wizard** (orders + registrations), **Warranty Policy page** (published policy overview) |
 
 **The docs URL `.../api/docs#tag/admin-settings` is the *admin* tier's own docs** — its path list (`/api/v1/admin/*`, `/api/v1/internal/*`) is not the integrator-facing surface. Always fetch and parse the raw `openapi.json` directly rather than trusting the rendered Scalar page (it's JS-rendered and won't come through a simple fetch) — and don't trust a single summarized pass over it either; a large spec can lose whole path groups to a lossy summary. Confirm path counts/lists by parsing the JSON directly (e.g. `python3 -c "import json; ..."`) when it matters.
 
@@ -45,9 +45,12 @@ Endpoints this demo currently uses (confirmed directly against the live OpenAPI 
 | Resource | Endpoints |
 |---|---|
 | Customer auth | `POST /api/v1/customer/auth/send-otp`, `POST /api/v1/customer/auth/verify-otp` |
-| Customer registrations | `GET /api/v1/customer/registrations`, `GET /api/v1/customer/registrations/{id}` |
+| Customer registrations | `GET /api/v1/customer/registrations`, `GET /api/v1/customer/registrations/{id}`, `POST /api/v1/customer/registrations` |
+| Customer orders | `GET /api/v1/customer/orders` (each line item comes pre-enriched with a `coverageStatus` — no local composition against rules/registrations needed) |
+| Published warranty policy | `GET /api/v1/customer/warranty-policy?slug=<tenant>` — the one customer-tier endpoint with no auth at all, public by design |
+| Warranty rules (plain tier) | `GET /v1/rules` — this repo's first plain-tier call. Rules are shared tenant *policy config*, not per-visitor data, so hard rule 3's demo_activity filtering doesn't apply here (nothing in `/v1/orders\|registrations\|claims\|products`'s "another visitor's data" sense to leak) |
 
-Not yet used, but real and documented in the spec for future features: plain-tier `POST/GET /v1/orders`, `POST/GET /v1/registrations`, `POST /v1/registrations/{id}/void`, `POST/GET /v1/claims`, `GET /v1/claims/{id}`, `POST /v1/claims/{id}/transition`, `POST /v1/claims/{id}/attachments`, `GET /v1/products`, `GET /v1/rules`; customer-tier `POST/GET /api/v1/customer/claims`, `GET /api/v1/customer/orders`, `GET /api/v1/customer/warranty-policy`.
+Not yet used, but real and documented in the spec for future features: plain-tier `POST/GET /v1/orders`, `POST/GET /v1/registrations`, `POST /v1/registrations/{id}/void`, `POST/GET /v1/claims`, `GET /v1/claims/{id}`, `POST /v1/claims/{id}/transition`, `POST /v1/claims/{id}/attachments`, `GET /v1/products`; customer-tier `POST/GET /api/v1/customer/claims`.
 
 Scopes on the plain-tier demo key are minimal: `orders:read`, `registrations:read`, `registrations:write`, `claims:read`, `claims:write`, `rules:read`, `products:read`. Do not request or assume broader scopes. The customer tier doesn't use API-key scopes at all — it's gated by the OTP-derived JWT instead.
 
@@ -111,7 +114,7 @@ Document every env var here before code references it:
 | Var | Purpose |
 |---|---|
 | `WARRANTINI_API_BASE_URL` | Base URL of Warrantini's public API |
-| `DEMO_API_KEY` | Server-only bearer key for the shared demo tenant's plain tier — never exposed client-side. Not needed by the customer-tier registrations feature (uses the OTP-derived JWT instead), but required by future plain-tier features |
+| `DEMO_API_KEY` | Server-only bearer key for the shared demo tenant's plain tier — never exposed client-side. Used by the Warranty Policy page's `GET /v1/rules` call; not needed by any customer-tier feature (those use the OTP-derived JWT, or no auth at all for the public policy endpoint) |
 | `WARRANTINI_TENANT_SLUG` | Server-only tenant slug required in the customer-tier OTP request bodies (`send-otp`/`verify-otp`) |
 | `DATABASE_URL` | This repo's own Neon Postgres connection string |
 | `CLERK_SECRET_KEY` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | This repo's own, separate Clerk application |

@@ -27,24 +27,35 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
   live bug in `app/layout.tsx` where the nav links were Clerk-gated (violated hard rule 6 — this flow's real gate
   is the OTP step, not Clerk sign-in).
 
+- **Registration flow** — `app/registrations/new/page.tsx` + `components/registrations/{wizard-view,wizard-steps,
+  order-select-step,item-select-step,confirm-step,success-step}.tsx`. Live spec check turned up a **customer-tier**
+  equivalent of the plain-tier endpoints this doc originally assumed (`GET /api/v1/customer/orders` — each line
+  item pre-enriched with a `coverageStatus` — and `POST /api/v1/customer/registrations`), the same fork feature 5
+  already flags for claims. Went with the customer tier: reuses feature 2's OTP gate/JWT cookie as-is, no local
+  orders/registrations/rules composition needed since the API computes coverage status itself, and no
+  `demo_activity`/Drizzle scaffolding needed (hard rule 3's customer-tier exception still applies). No
+  `Idempotency-Key` header — not documented on this endpoint; the API's own `409` on a duplicate registration is
+  the dedup mechanism instead.
+
+- **Warranty Policy page** — `app/warranty-policy/page.tsx` + `components/warranty-policy/policy-view.tsx`. Ended
+  up hybrid across two endpoints found by checking the live spec (this doc had only flagged `GET /v1/rules` to
+  check): the published-policy overview comes from `GET /api/v1/customer/warranty-policy?slug=<tenant>` — a public
+  endpoint, no auth at all, not previously in this doc's endpoint table — rendered as trusted first-party HTML with
+  a static fallback if that call fails; the structured "Coverage by Category" table comes from `GET /v1/rules`
+  (plain tier, this repo's **first** plain-tier call — `lib/warrantini-client.ts` gained an `apiKey` option
+  alongside `customerToken`). Rules are shared tenant policy config, not per-visitor data, so hard rule 3 doesn't
+  apply to it either. `DEMO_API_KEY` was provisioned and verified end-to-end against the live tenant (`wrnt_live_...`,
+  returns real rule data) — the rules-backed table degrades to a "check back soon" note only if that call ever
+  fails, which no longer happens by default.
+
+  This also surfaced a real bug in `lib/rate-limit.ts`: the configured Upstash token is **read-only**, and
+  `@upstash/ratelimit`'s sliding-window algorithm needs `EVALSHA` (Lua scripts) to atomically check-and-increment,
+  which a read-only token can't run — every rate-limited route with no prior gate (`send-otp`, the new rules/
+  warranty-policy routes) was 500ing. Fixed by wrapping `checkRateLimit`'s `.limit()` call in its own try/catch that
+  fails open on any Redis-side error, not just "not configured" — matching the fail-open philosophy already stated
+  in that file's own comments. Worth fixing at the token level too if real rate limiting is wanted in production.
+
 ## Up next
-
-### 3. Registration flow
-- **Prototype reference:** `design/portal-customer.html:1161-1392` — 3-step wizard: select order → select item
-  (5 coverage-check states: included, already-registered, excluded, expired, usage-based) → confirm → success.
-- **Routes:** `/registrations/new` (or similar wizard route).
-- **Upstream endpoints:** `GET /v1/orders`, `POST /v1/registrations`.
-- **Hard rules that apply:** record the resulting registration id in `demo_activity` (rule 2); use the
-  `Idempotency-Key` header on the write; render this as a narrated API call (CLAUDE.md's core feature).
-
-### 4. Warranty Policy page
-- **Prototype reference:** `design/portal-customer.html:1393-1477` (static content: overview, coverage by
-  category, what's covered/not covered, how to file a claim, conditions).
-- **Routes:** `/warranty-policy`.
-- **Notes:** content needs to be rewritten for Pergola Cave's actual product categories (aluminum frames, motors/
-  electronics, fabric/canopy, hardware) instead of Trail Supply's footwear/apparel/backpacks/bikes. No live
-  endpoint backs this today — check `GET /v1/rules` against the live spec to see if policy content should be
-  sourced from there instead of hardcoded.
 
 ### 5. Claims list + detail
 - **Prototype reference:** `design/portal-customer.html:1478-1686` — 3 states (info-requested, in-review,
@@ -74,7 +85,8 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
 - **Rate limiting** (`lib/rate-limit.ts`) — built in feature 2 (Upstash sliding-window limiters, fails open with
   a console warning if `UPSTASH_REDIS_REST_URL`/`TOKEN` aren't configured). Reuse `checkOtpSendRateLimit`/
   `checkRegistrationsReadRateLimit` or add new limiter instances following the same pattern.
-- **`demo_activity` scoping helpers + Drizzle schema** — still not built. Not needed by feature 2 (customer tier
-  is pre-scoped by Warrantini itself), but required by any feature that talks to the **plain** tier or that
-  writes data (features 3, 6, and 5/4 if they end up using the plain tier) — build alongside whichever of those
-  hits it first, then reuse.
+- **`demo_activity` scoping helpers + Drizzle schema** — still not built. Not needed by features 2, 3, or 4 in
+  the end (all customer-tier, or — feature 4's rules table — shared tenant policy config rather than per-visitor
+  data). Feature 3's plain-tier write (`POST /v1/registrations`) is still real and documented but unused; still
+  required by whichever future feature first does a **plain-tier write** (feature 6, or 3/5 if ever redone against
+  the plain tier) — build alongside whichever of those hits it first, then reuse.

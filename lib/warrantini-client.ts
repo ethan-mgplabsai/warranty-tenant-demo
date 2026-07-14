@@ -17,6 +17,8 @@ type CallWarrantiniOptions = {
   body?: unknown;
   /** Customer JWT from the OTP flow. Never logged or returned in narration. */
   customerToken?: string;
+  /** Plain-tier DEMO_API_KEY for tenant-wide /v1/* calls. Never logged or returned in narration. */
+  apiKey?: string;
 };
 
 type CallWarrantiniResult<T> = {
@@ -34,7 +36,7 @@ type CallWarrantiniResult<T> = {
 export async function callWarrantini<T = unknown>(
   options: CallWarrantiniOptions
 ): Promise<CallWarrantiniResult<T>> {
-  const { method, path, body, customerToken } = options;
+  const { method, path, body, customerToken, apiKey } = options;
   const baseUrl = process.env.WARRANTINI_API_BASE_URL;
   if (!baseUrl) {
     throw new Error("WARRANTINI_API_BASE_URL is not configured");
@@ -43,6 +45,8 @@ export async function callWarrantini<T = unknown>(
   const headers: Record<string, string> = { "Content-Type": "application/json" };
   if (customerToken) {
     headers.Authorization = `Bearer ${customerToken}`;
+  } else if (apiKey) {
+    headers.Authorization = `Bearer ${apiKey}`;
   }
 
   const startedAt = Date.now();
@@ -70,7 +74,7 @@ export async function callWarrantini<T = unknown>(
     responseBody: data,
     latencyMs,
     timestamp: new Date().toISOString(),
-    authHeaderRedacted: customerToken ? "Bearer ••••••••" : null,
+    authHeaderRedacted: customerToken || apiKey ? "Bearer ••••••••" : null,
   };
 
   return { status: response.status, data, narration };

@@ -41,6 +41,20 @@ const registrationsWriteLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 m"), prefix: "rl:regs-write" })
   : null;
 
+// Warranty rules are shared tenant policy config (same for every visitor), not
+// per-customer data — generous limit, IP-keyed, same risk profile as the other
+// read endpoints.
+const rulesReadLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 m"), prefix: "rl:rules-read" })
+  : null;
+
+// The published policy endpoint needs no upstream credential at all, but it's
+// still our own public route hitting the shared demo tenant — keep the same
+// generous IP-keyed limit as the other read endpoints as defense-in-depth.
+const warrantyPolicyReadLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 m"), prefix: "rl:policy-read" })
+  : null;
+
 export function getClientIp(request: NextRequest): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
   return forwardedFor?.split(",")[0]?.trim() ?? "127.0.0.1";
@@ -48,49 +62,54 @@ export function getClientIp(request: NextRequest): string {
 
 export type RateLimitResult = { success: true } | { success: false; retryAfterMs: number };
 
+async function checkRateLimit(limiter: Ratelimit | null, key: string): Promise<RateLimitResult> {
+  if (!limiter) return { success: true };
+
+  try {
+    const result = await limiter.limit(key);
+    if (!result.success) {
+      return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
+    }
+    return { success: true };
+  } catch (error) {
+    // Same fail-open philosophy as the "not configured" case above: a Redis-side
+    // failure (permissions, outage, network) shouldn't 500 every request this
+    // layer touches — this is defense-in-depth on top of the upstream key's own
+    // limit, not the only thing standing between the app and abuse.
+    console.warn("[rate-limit] limiter call failed, failing open:", error);
+    return { success: true };
+  }
+}
+
 export async function checkOtpSendRateLimit(ip: string, email: string): Promise<RateLimitResult> {
   if (!otpSendIpLimiter || !otpSendEmailLimiter) return { success: true };
 
   const [ipResult, emailResult] = await Promise.all([
-    otpSendIpLimiter.limit(ip),
-    otpSendEmailLimiter.limit(email.toLowerCase()),
+    checkRateLimit(otpSendIpLimiter, ip),
+    checkRateLimit(otpSendEmailLimiter, email.toLowerCase()),
   ]);
 
-  if (!ipResult.success) {
-    return { success: false, retryAfterMs: Math.max(0, ipResult.reset - Date.now()) };
-  }
-  if (!emailResult.success) {
-    return { success: false, retryAfterMs: Math.max(0, emailResult.reset - Date.now()) };
-  }
+  if (!ipResult.success) return ipResult;
+  if (!emailResult.success) return emailResult;
   return { success: true };
 }
 
-export async function checkRegistrationsReadRateLimit(ip: string): Promise<RateLimitResult> {
-  if (!registrationsReadLimiter) return { success: true };
-
-  const result = await registrationsReadLimiter.limit(ip);
-  if (!result.success) {
-    return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
-  }
-  return { success: true };
+export function checkRegistrationsReadRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(registrationsReadLimiter, ip);
 }
 
-export async function checkOrdersReadRateLimit(ip: string): Promise<RateLimitResult> {
-  if (!ordersReadLimiter) return { success: true };
-
-  const result = await ordersReadLimiter.limit(ip);
-  if (!result.success) {
-    return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
-  }
-  return { success: true };
+export function checkOrdersReadRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(ordersReadLimiter, ip);
 }
 
-export async function checkRegistrationsWriteRateLimit(ip: string): Promise<RateLimitResult> {
-  if (!registrationsWriteLimiter) return { success: true };
+export function checkRegistrationsWriteRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(registrationsWriteLimiter, ip);
+}
 
-  const result = await registrationsWriteLimiter.limit(ip);
-  if (!result.success) {
-    return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
-  }
-  return { success: true };
+export function checkRulesReadRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(rulesReadLimiter, ip);
+}
+
+export function checkWarrantyPolicyReadRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(warrantyPolicyReadLimiter, ip);
 }
