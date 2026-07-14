@@ -12,15 +12,12 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
   Register a Product / Warranty Policy action cards, Need Help contact card). Mirrors
   `design/portal-customer.html:1905-1957`.
 
-## Up next
+- **Auth shell** — `components/auth-page-shell.tsx` (shared hero/headline/Need-Help wrapper), `app/sign-in`,
+  `app/sign-up` restyled to match the landing page and Pergola Cave brand around Clerk's hosted `<SignIn />`/
+  `<SignUp />` widgets, which already inherit the brand theme via `ClerkProvider appearance={{ theme: shadcn }}`
+  in `app/layout.tsx`. No OTP flow — Clerk's own hosted UI handles auth strategy.
 
-### 1. Auth shell
-- **Prototype reference:** `design/portal-customer.html:905-978` (email sign-in + OTP pages).
-- **Reality check:** this repo uses Clerk for optional sign-in (see CLAUDE.md "Clerk auth"), not a hand-rolled
-  OTP flow. This session is about styling Clerk's hosted sign-in/sign-up (`app/sign-in`, `app/sign-up`) to match
-  the brand — welcome copy, hero treatment, "Need Help?" card — not reimplementing OTP.
-- **Routes:** `/sign-in`, `/sign-up` (already scaffolded).
-- **Hard rules that apply:** sign-in must never gate core demo flows (CLAUDE.md rule 6).
+## Up next
 
 ### 2. Registrations list
 - **Prototype reference:** `design/portal-customer.html:982-1160` (5 card states: active/new, active/mid-coverage,
