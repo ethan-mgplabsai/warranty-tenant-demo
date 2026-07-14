@@ -86,6 +86,8 @@ Document every env var here before code references it:
 | `DATABASE_URL` | This repo's own Neon Postgres connection string |
 | `CLERK_SECRET_KEY` / `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | This repo's own, separate Clerk application |
 | `CLERK_WEBHOOK_SECRET` | Svix signing secret for the Clerk webhook |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` / `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Route paths for Clerk's sign-in/sign-up pages (`/sign-in`, `/sign-up`) |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL` / `NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL` | Where Clerk redirects after sign-in/sign-up if no other redirect is specified (`/`) |
 | `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Rate limiting / session cache |
 | `SENTRY_DSN` | Error monitoring |
 | `NEXT_PUBLIC_POSTHOG_KEY` (optional) | Analytics |

@@ -1,9 +1,11 @@
 allowBuilds:
   '@sentry/cli': true
+  bufferutil: true
   core-js: false
   esbuild: true
   sharp: true
   unrs-resolver: false
+  utf-8-validate: true
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver
