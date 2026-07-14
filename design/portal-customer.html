@@ -1,0 +1,2368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="images/favicon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>warrantini — Customer Portal Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Brand tokens (branding.md §6 + ux-design.md §15) ── */
+  :root {
+    --navy: #0C2340;
+    --blue: #4B92DB;
+    --red: #C8102E;
+    --silver: #A5ACAF;
+    --white: #FFFFFF;
+
+    --gray-50: #F9FAFB;
+    --gray-100: #F3F4F6;
+    --gray-200: #E5E7EB;
+    --gray-300: #D1D5DB;
+    --gray-400: #9CA3AF;
+    --gray-600: #6B7280;
+
+    --color-success-text: #065F46;
+    --color-success-bg: #ECFDF5;
+    --color-warning-text: #9A3412;
+    --color-warning-bg: #FFF7ED;
+    --color-info-text: #1a5fa8;
+    --color-info-bg: #EBF3FB;
+
+    --font-display: 'Outfit', sans-serif;
+    --font-ui: 'Syne', sans-serif;
+    --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', monospace;
+
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    --topbar-height: 56px;
+    --content-max-portal: 720px;
+    --content-max-portal-form: 480px;
+
+    --shadow-sm: 0 1px 2px rgba(12, 35, 64, 0.05);
+    --shadow-md: 0 4px 6px rgba(12, 35, 64, 0.07);
+
+    --duration-fast: 100ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+
+    --focus-ring: 0 0 0 3px rgba(75, 146, 219, 0.15);
+  }
+
+  body {
+    font-family: var(--font-ui);
+    font-weight: 400;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--navy);
+    background: var(--white);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── Proto bar ── */
+  .proto-bar {
+    background: var(--navy);
+    color: var(--white);
+    padding: var(--space-2) var(--space-4);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    gap: var(--space-3);
+  }
+  .proto-bar-label { white-space: nowrap; }
+  .proto-bar-steps { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+  .proto-sep {
+    width: 1px;
+    height: 16px;
+    background: rgba(255,255,255,0.2);
+    margin: 0 var(--space-1);
+    flex-shrink: 0;
+  }
+  .proto-btn {
+    background: rgba(255,255,255,0.12);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 3px 8px;
+    font-family: var(--font-ui);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background var(--duration-fast);
+    white-space: nowrap;
+  }
+  .proto-btn:hover { background: rgba(255,255,255,0.22); }
+  .proto-btn.active { background: var(--blue); }
+
+  /* ── Header ── */
+  .header {
+    height: var(--topbar-height);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--space-6);
+    background: var(--white);
+    flex-shrink: 0;
+  }
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .header-brand-name {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: var(--navy);
+  }
+  .header-nav { display: flex; gap: var(--space-6); list-style: none; }
+  .header-nav a {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--gray-600);
+    text-decoration: none;
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .header-nav a:hover { color: var(--navy); }
+  .header-nav a.active { color: var(--navy); }
+  /* Pre-auth: hide nav links */
+  .header-nav.pre-auth a.auth-only { display: none; }
+
+  /* ── Page containers ── */
+  .page {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+  }
+  .page.active { display: flex; }
+
+  /* ── Auth pages (centered card layout) ── */
+  .page-auth {
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--space-12) var(--space-4);
+    background: var(--white);
+  }
+
+  /* ── Registrations page (list layout) ── */
+  .page-list {
+    background: var(--gray-50);
+  }
+  .page-list-inner {
+    flex: 1;
+    width: 100%;
+    max-width: var(--content-max-portal);
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-4);
+  }
+
+  /* ── Registration flow (centered card) ── */
+  .page-flow {
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--space-8) var(--space-4);
+    background: var(--white);
+  }
+
+  /* ── Step indicator ── */
+  .steps {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-10);
+  }
+  .step-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    z-index: 1;
+  }
+  .step-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+    transition: all var(--duration-normal) var(--ease-standard);
+  }
+  .step-circle.completed { background: var(--blue); color: var(--white); }
+  .step-circle.current {
+    background: var(--navy);
+    color: var(--white);
+    animation: stepPulse 2s ease-in-out infinite;
+  }
+  .step-circle.future {
+    background: var(--white);
+    border: 2px solid var(--gray-300);
+    color: var(--gray-400);
+  }
+  @keyframes stepPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(12, 35, 64, 0.2); }
+    50% { box-shadow: 0 0 0 6px rgba(12, 35, 64, 0); }
+  }
+  .step-label {
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--gray-400);
+    white-space: nowrap;
+  }
+  .step-label.active { color: var(--navy); }
+  .step-label.done { color: var(--blue); }
+  .step-line {
+    width: 56px;
+    height: 2px;
+    margin-bottom: 22px;
+  }
+  .step-line.solid { background: var(--blue); }
+  .step-line.dashed { background: none; border-top: 2px dashed var(--gray-300); }
+
+  /* ── Card ── */
+  .card {
+    width: 100%;
+    max-width: var(--content-max-portal-form);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-8);
+    background: var(--white);
+    animation: cardIn var(--duration-slow) var(--ease-decelerate);
+  }
+  .card.wide { max-width: var(--content-max-portal); }
+  @keyframes cardIn { from { opacity: 0; } to { opacity: 1; } }
+  .card-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-400);
+    text-decoration: none;
+    margin-bottom: var(--space-6);
+    cursor: pointer;
+    transition: color var(--duration-fast) var(--ease-standard);
+  }
+  .card-back:hover { color: var(--navy); }
+  .card-back svg { width: 16px; height: 16px; }
+  .card-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--navy);
+    margin-bottom: var(--space-2);
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--gray-600);
+    line-height: 1.6;
+    margin-bottom: var(--space-6);
+  }
+
+  /* ── Form inputs ── */
+  .field { margin-bottom: var(--space-4); }
+  .field-label {
+    display: block;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--navy);
+    margin-bottom: 6px;
+  }
+  .field-help { font-size: 12px; color: var(--gray-400); margin-top: var(--space-1); }
+  .usage-input-group { display: flex; align-items: center; gap: var(--space-2); }
+  .input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    padding: 0 var(--space-3);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    color: var(--navy);
+    outline: none;
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .input::placeholder { color: var(--gray-400); }
+  .input:focus { border-color: var(--blue); box-shadow: var(--focus-ring); }
+
+  /* OTP */
+  .otp-group {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    margin: var(--space-6) 0;
+  }
+  .otp-box {
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-md);
+    text-align: center;
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--navy);
+    font-family: var(--font-ui);
+    outline: none;
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .otp-box:focus { border-color: var(--blue); box-shadow: var(--focus-ring); }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    height: 40px;
+    padding: 0 var(--space-6);
+    border: none;
+    border-radius: var(--radius-lg);
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-standard);
+    outline: none;
+    position: relative;
+    text-decoration: none;
+  }
+  .btn:focus-visible { box-shadow: var(--focus-ring); }
+  .btn-primary { background: var(--navy); color: var(--white); }
+  .btn-primary:hover { background: #0e2a4a; }
+  .btn-ghost { background: transparent; color: var(--navy); }
+  .btn-ghost:hover { background: var(--gray-100); }
+  .btn-outline { background: transparent; color: var(--navy); border: 1.5px solid var(--gray-200); }
+  .btn-outline:hover { background: var(--gray-50); border-color: var(--gray-300); }
+  .btn-full { width: 100%; }
+  .btn-sm { height: 32px; padding: 0 var(--space-4); font-size: 12px; }
+  .btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+  /* ── Badges ── */
+  .badge {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    padding: 2px 8px;
+    line-height: 1.6;
+  }
+  .badge-active { color: var(--color-success-text); background: var(--color-success-bg); }
+  .badge-pending { color: var(--color-warning-text); background: var(--color-warning-bg); }
+  .badge-registered { color: var(--color-info-text); background: var(--color-info-bg); }
+  .badge-expired { color: var(--gray-600); background: var(--gray-100); }
+  .badge-voided { color: var(--gray-600); background: var(--gray-100); }
+  .badge-replaced { color: var(--color-info-text); background: var(--color-info-bg); }
+
+  /* ── Resend link ── */
+  .resend-link {
+    display: block;
+    text-align: center;
+    font-size: 13px;
+    color: var(--gray-400);
+    margin-top: var(--space-4);
+  }
+  .resend-link a { color: var(--blue); text-decoration: none; font-weight: 600; cursor: pointer; }
+  .resend-link a:hover { text-decoration: underline; }
+
+  /* ── Order cards ── */
+  .order-list { display: flex; flex-direction: column; gap: var(--space-3); }
+  .order-card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-standard);
+  }
+  .order-card:hover { background: var(--gray-50); }
+  .order-card.selected { border-color: var(--blue); background: var(--color-info-bg); }
+  .order-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+  }
+  .order-number { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--navy); }
+  .order-date { font-size: 12px; color: var(--silver); }
+  .order-summary { font-size: 13px; color: var(--gray-600); }
+  .order-items-toggle { font-size: 12px; color: var(--blue); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; margin-top: var(--space-2); font-weight: 500; }
+  .order-items-toggle:hover { text-decoration: underline; }
+  .order-items-toggle svg { width: 12px; height: 12px; transition: transform var(--duration-fast) var(--ease-standard); }
+  .order-items-toggle.expanded svg { transform: rotate(180deg); }
+  .order-items-list { padding-top: var(--space-2); border-top: 1px solid var(--gray-100); margin-top: var(--space-2); }
+  .order-item-row { display: flex; align-items: center; gap: var(--space-3); font-size: 12px; padding: 3px 0; }
+  .order-item-name { color: var(--navy); flex: 1; font-weight: 500; }
+  .order-item-sku { color: var(--gray-400); font-family: var(--font-mono); font-size: 11px; }
+  .order-item-price { color: var(--gray-600); font-family: var(--font-mono); font-size: 12px; min-width: 60px; text-align: right; }
+  .nav-policy { display: inline-flex; align-items: center; gap: 4px; color: var(--blue) !important; }
+  .nav-policy:hover { color: var(--blue) !important; }
+
+  /* ── Line item cards ── */
+  .item-list { display: flex; flex-direction: column; gap: var(--space-3); }
+  .item-card {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--ease-standard);
+  }
+  .item-card:hover { background: var(--gray-50); }
+  .item-card.selected { border-color: var(--blue); background: var(--color-info-bg); }
+  .item-card.disabled { cursor: default; opacity: 0.6; }
+  .item-card.disabled:hover { background: var(--white); }
+  .item-img {
+    width: 56px; height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--gray-100);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    overflow: hidden;
+    transition: box-shadow 0.15s ease;
+  }
+  .item-img:hover { box-shadow: 0 0 0 2px rgba(var(--navy-rgb, 23,42,69), 0.15); }
+  .item-img svg { color: var(--gray-300); }
+  .item-info { flex: 1; min-width: 0; }
+  .item-name { font-weight: 600; font-size: 14px; color: var(--navy); margin-bottom: 2px; }
+  .item-meta { font-size: 12px; color: var(--gray-400); }
+  .item-price { font-weight: 600; font-size: 14px; color: var(--navy); flex-shrink: 0; }
+  .item-coverage { font-size: 11px; margin-top: 2px; display: flex; align-items: center; gap: var(--space-1); }
+  .item-coverage svg { width: 12px; height: 12px; flex-shrink: 0; }
+  .item-coverage.coverage-included { color: var(--color-success-text); }
+  .item-coverage.coverage-excluded { color: var(--red); }
+  .item-coverage.coverage-expired { color: var(--color-warning-text); }
+  .item-card.excluded { cursor: default; opacity: 0.5; }
+  .item-card.excluded:hover { background: var(--white); }
+  .item-card.expired-coverage { border-color: var(--color-warning-bg); }
+  .item-card.expired-coverage:hover { background: #FFFBF5; }
+  .item-card.expired-coverage.selected { border-color: var(--color-warning-text); background: var(--color-warning-bg); }
+  .badge-excluded { color: var(--red); background: #FEF2F2; }
+  .badge-expired-coverage { color: var(--color-warning-text); background: var(--color-warning-bg); }
+
+  /* ── Warning banner ── */
+  .warning-banner {
+    background: var(--color-warning-bg);
+    border: 1px solid rgba(154, 52, 18, 0.15);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-5);
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+    font-size: 12px;
+    color: var(--color-warning-text);
+    line-height: 1.6;
+  }
+  .warning-banner svg { flex-shrink: 0; margin-top: 2px; }
+  .warning-banner strong { font-weight: 700; }
+
+  /* ── Summary rows ── */
+  .summary-rows {
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: var(--space-6);
+  }
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3) var(--space-4);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .summary-row:last-child { border-bottom: none; }
+  .summary-row:nth-child(even) { background: var(--gray-50); }
+  .summary-label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); }
+  .summary-value { font-size: 14px; color: var(--navy); text-align: right; }
+  .summary-value.mono { font-family: var(--font-mono); font-size: 13px; }
+
+  /* ── Success state ── */
+  .success-icon {
+    width: 64px; height: 64px;
+    margin: 0 auto var(--space-6);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: var(--color-success-bg);
+  }
+  .success-icon.animate { animation: successPop 0.4s var(--ease-decelerate); }
+  @keyframes successPop {
+    0% { transform: scale(0.5); opacity: 0; }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .success-icon svg { color: var(--color-success-text); }
+  .success-detail {
+    background: var(--gray-50);
+    border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5);
+    margin-bottom: var(--space-6);
+    text-align: left;
+  }
+  .success-detail-row { display: flex; justify-content: space-between; padding: var(--space-1) 0; font-size: 13px; }
+  .success-detail-label { color: var(--gray-400); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; }
+  .success-detail-value { color: var(--navy); }
+  .success-detail-value.mono { font-family: var(--font-mono); font-size: 13px; }
+
+  /* ═══════════════════════════════════════════════════
+     MY REGISTRATIONS PAGE
+     ═══════════════════════════════════════════════════ */
+
+  .page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: var(--space-6);
+  }
+  .page-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 24px;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--navy);
+  }
+  .page-subtitle { font-size: 14px; color: var(--gray-600); margin-top: var(--space-1); }
+
+  /* Filter tabs */
+  .filter-tabs {
+    display: flex;
+    gap: var(--space-1);
+    margin-bottom: var(--space-5);
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .filter-tab {
+    padding: var(--space-2) var(--space-4);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--gray-400);
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all var(--duration-fast) var(--ease-standard);
+    font-family: var(--font-ui);
+  }
+  .filter-tab:hover { color: var(--gray-600); }
+  .filter-tab.active { color: var(--navy); border-bottom-color: var(--blue); }
+  .filter-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    border-radius: 9px; background: var(--gray-100);
+    font-size: 10px; font-weight: 700; color: var(--gray-600);
+    margin-left: var(--space-1);
+  }
+  .filter-tab.active .filter-count { background: var(--color-info-bg); color: var(--color-info-text); }
+
+  /* Registration list cards */
+  .reg-list { display: flex; flex-direction: column; gap: var(--space-3); }
+  .reg-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5) var(--space-6);
+    transition: all var(--duration-fast) var(--ease-standard);
+    cursor: pointer;
+  }
+  .reg-card:hover { border-color: var(--gray-300); box-shadow: 0 1px 3px rgba(12, 35, 64, 0.06); }
+  .reg-card-top { display: flex; align-items: flex-start; gap: var(--space-4); margin-bottom: var(--space-4); }
+  .reg-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--radius-lg);
+    background: var(--gray-50);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .reg-icon svg { color: var(--gray-400); }
+  .reg-info { flex: 1; min-width: 0; }
+  .reg-product { font-weight: 700; font-size: 15px; color: var(--navy); margin-bottom: 2px; }
+  .reg-meta { font-size: 12px; color: var(--gray-400); display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+  .reg-meta-sep { color: var(--gray-300); }
+  .reg-id { font-family: var(--font-mono); font-size: 12px; color: var(--gray-400); }
+  .reg-badge { flex-shrink: 0; }
+  .reg-coverage { display: flex; align-items: center; gap: var(--space-4); margin-bottom: var(--space-3); }
+  .coverage-bar-wrap { flex: 1; height: 6px; background: var(--gray-100); border-radius: 3px; overflow: hidden; }
+  .coverage-bar { height: 100%; border-radius: 3px; transition: width 0.6s var(--ease-decelerate); }
+  .coverage-bar.green { background: var(--color-success-text); opacity: 0.6; }
+  .coverage-bar.amber { background: var(--color-warning-text); opacity: 0.5; }
+  .coverage-bar.gray { background: var(--gray-300); }
+  .coverage-dates { font-size: 11px; color: var(--gray-400); white-space: nowrap; flex-shrink: 0; }
+  .reg-footer { display: flex; align-items: center; justify-content: space-between; }
+  .reg-order { font-size: 12px; color: var(--gray-400); }
+  .reg-order span { font-family: var(--font-mono); color: var(--gray-600); }
+  .reg-ts { font-size: 12px; }
+
+  /* ── Drawer ── */
+  .drawer-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(12, 35, 64, 0.3);
+    z-index: 200;
+    opacity: 0; pointer-events: none;
+    transition: opacity var(--duration-normal) var(--ease-standard);
+  }
+  .drawer-backdrop.open { opacity: 1; pointer-events: auto; }
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0;
+    width: 420px; max-width: 100%;
+    background: var(--white);
+    z-index: 210;
+    transform: translateX(100%);
+    transition: transform 250ms var(--ease-decelerate);
+    display: flex; flex-direction: column;
+    border-left: 1px solid var(--gray-200);
+  }
+  .drawer-backdrop.open .drawer { transform: translateX(0); }
+  .drawer-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--space-5) var(--space-6);
+    border-bottom: 1px solid var(--gray-200);
+    flex-shrink: 0;
+  }
+  .drawer-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; letter-spacing: -0.01em; }
+  .drawer-close {
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border: none; background: none;
+    border-radius: var(--radius-md);
+    cursor: pointer; color: var(--gray-400);
+    transition: all var(--duration-fast);
+  }
+  .drawer-close:hover { background: var(--gray-100); color: var(--navy); }
+  .drawer-body { flex: 1; overflow-y: auto; padding: var(--space-6); }
+  .drawer-footer {
+    padding: var(--space-4) var(--space-6);
+    border-top: 1px solid var(--gray-200);
+    display: flex; gap: var(--space-3);
+    flex-shrink: 0;
+  }
+  .drawer-footer .btn { flex: 1; }
+  .detail-section { margin-bottom: var(--space-6); }
+  .detail-section-title { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); margin-bottom: var(--space-3); }
+  .detail-rows { display: flex; flex-direction: column; gap: var(--space-1); }
+  .detail-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-2) 0; }
+  .detail-label { font-size: 13px; color: var(--gray-600); }
+  .detail-value { font-size: 13px; font-weight: 600; color: var(--navy); }
+  .detail-value.mono { font-family: var(--font-mono); font-weight: 400; }
+  .detail-coverage {
+    background: var(--gray-50); border-radius: var(--radius-lg);
+    padding: var(--space-4); margin-bottom: var(--space-6);
+  }
+  .detail-coverage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+  .detail-coverage-label { font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gray-400); }
+  .detail-coverage-pct { font-family: var(--font-mono); font-size: 12px; font-weight: 600; }
+  .detail-coverage-bar { height: 8px; background: var(--gray-200); border-radius: 4px; overflow: hidden; margin-bottom: var(--space-3); }
+  .detail-coverage-fill { height: 100%; border-radius: 4px; }
+  .detail-coverage-dates { display: flex; justify-content: space-between; font-size: 12px; color: var(--gray-400); }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: var(--space-16) var(--space-8); }
+  .empty-icon { width: 48px; height: 48px; margin: 0 auto var(--space-4); color: var(--gray-300); }
+  .empty-title { font-family: var(--font-display); font-weight: 700; font-size: 18px; color: var(--navy); margin-bottom: var(--space-2); }
+  .empty-desc { font-size: 14px; color: var(--gray-400); max-width: 320px; margin: 0 auto; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: var(--space-6);
+    border-top: 1px solid var(--gray-200);
+    flex-shrink: 0;
+  }
+  .footer-powered {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--silver);
+  }
+
+  /* ── Utility ── */
+  .hidden { display: none !important; }
+  .mt-2 { margin-top: var(--space-2); }
+  .mt-4 { margin-top: var(--space-4); }
+  .mt-6 { margin-top: var(--space-6); }
+  .mb-4 { margin-bottom: var(--space-4); }
+
+  /* ── Arrow icon reuse ── */
+  .icon-back { width: 16px; height: 16px; }
+
+  /* ── Claims list ── */
+  .claim-card {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    padding: var(--space-5);
+    cursor: pointer;
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .claim-card:hover { border-color: var(--blue); box-shadow: 0 2px 8px rgba(75,146,219,0.08); }
+  .claim-card + .claim-card { margin-top: var(--space-3); }
+  .claim-card-top { display: flex; align-items: flex-start; gap: var(--space-3); }
+  .claim-icon {
+    width: 36px; height: 36px; border-radius: var(--radius-md); display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .claim-icon.submitted { background: #FFF7ED; color: #9A3412; }
+  .claim-icon.in-review { background: #EBF3FB; color: #1a5fa8; }
+  .claim-icon.info-requested { background: #FFF7ED; color: #9A3412; }
+  .claim-icon.approved { background: #ECFDF5; color: #065F46; }
+  .claim-icon.fulfilled { background: #ECFDF5; color: #065F46; }
+  .claim-icon.rejected { background: var(--gray-100); color: var(--gray-600); }
+  .claim-info { flex: 1; min-width: 0; }
+  .claim-product { font-family: var(--font-display); font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+  .claim-meta { font-size: 12px; color: var(--gray-400); margin-top: 2px; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .claim-meta-sep { color: var(--gray-300); }
+  .claim-desc-preview { font-size: 13px; color: var(--gray-600); line-height: 1.5; margin-top: var(--space-3); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+  .badge-submitted { background: #FFF7ED; color: #9A3412; }
+  .badge-in-review { background: #EBF3FB; color: #1a5fa8; }
+  .badge-info-requested { background: #FFF7ED; color: #9A3412; }
+  .badge-approved { background: #ECFDF5; color: #065F46; }
+  .badge-fulfilled { background: #ECFDF5; color: #065F46; }
+  .badge-rejected { background: var(--gray-100); color: var(--gray-600); }
+
+  /* ── Claim detail page ── */
+  .claim-detail-card { background: var(--white); border: 1.5px solid var(--gray-200); border-radius: var(--radius-xl); padding: var(--space-6); margin-bottom: var(--space-4); }
+  .claim-timeline { position: relative; padding-left: var(--space-8); }
+  .claim-timeline::before { content: ''; position: absolute; left: 14px; top: 8px; bottom: 8px; width: 2px; background: var(--gray-200); }
+  .timeline-item { position: relative; padding-bottom: var(--space-5); }
+  .timeline-item:last-child { padding-bottom: 0; }
+  .timeline-dot {
+    position: absolute; left: calc(-1 * var(--space-8) + 7px); top: 4px;
+    width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--gray-200);
+    background: var(--white); z-index: 1;
+  }
+  .timeline-dot.system { background: var(--gray-200); border-color: var(--gray-200); }
+  .timeline-dot.customer { background: var(--blue); border-color: var(--blue); }
+  .timeline-dot.agent { background: var(--navy); border-color: var(--navy); }
+  .timeline-time { font-size: 11px; color: var(--gray-400); margin-bottom: 2px; }
+  .timeline-actor { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .timeline-actor.system { color: var(--gray-400); }
+  .timeline-actor.customer { color: var(--blue); }
+  .timeline-actor.agent { color: var(--navy); }
+  .timeline-text { font-size: 13px; color: var(--navy); line-height: 1.5; }
+
+  .info-request-banner {
+    background: #FFF7ED; border: 1.5px solid #FDBA74; border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5); margin-bottom: var(--space-4);
+    display: flex; align-items: flex-start; gap: var(--space-3);
+  }
+  .info-request-banner svg { flex-shrink: 0; color: #9A3412; margin-top: 2px; }
+  .info-request-content { flex: 1; }
+  .info-request-title { font-weight: 700; font-size: 13px; color: #9A3412; margin-bottom: 2px; }
+  .info-request-desc { font-size: 13px; color: #9A3412; opacity: 0.8; line-height: 1.4; }
+
+  /* ── File claim flow ── */
+  .upload-zone {
+    border: 2px dashed var(--gray-300); border-radius: var(--radius-lg);
+    padding: var(--space-8) var(--space-4); text-align: center; cursor: pointer;
+    transition: border-color var(--duration-fast), background var(--duration-fast);
+  }
+  .upload-zone:hover { border-color: var(--blue); background: rgba(75,146,219,0.03); }
+  .upload-zone-icon { color: var(--gray-400); margin-bottom: var(--space-2); }
+  .upload-zone-text { font-size: 13px; color: var(--gray-600); }
+  .upload-zone-hint { font-size: 11px; color: var(--gray-400); margin-top: var(--space-1); }
+  .upload-previews { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-4); }
+  .upload-thumb {
+    width: 72px; height: 72px; border-radius: var(--radius-md); background: var(--gray-100);
+    display: flex; align-items: center; justify-content: center; position: relative;
+    border: 1.5px solid var(--gray-200); overflow: hidden;
+  }
+  .upload-thumb-remove {
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+    background: var(--navy); color: var(--white); border: 2px solid var(--white);
+    border-radius: 50%; font-size: 10px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; line-height: 1;
+  }
+  .upload-thumb-name { font-size: 9px; color: var(--gray-600); text-align: center; padding: 2px; word-break: break-all; }
+
+  .claim-reg-card {
+    background: var(--white); border: 1.5px solid var(--gray-200); border-radius: var(--radius-lg);
+    padding: var(--space-4) var(--space-5); cursor: pointer;
+    transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+  }
+  .claim-reg-card:hover { border-color: var(--blue); box-shadow: 0 2px 8px rgba(75,146,219,0.08); }
+  .claim-reg-card.selected { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(75,146,219,0.15); }
+  .claim-reg-card + .claim-reg-card { margin-top: var(--space-3); }
+  .claim-reg-card.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+  .claim-summary-block {
+    background: var(--gray-50); border-radius: var(--radius-lg);
+    padding: var(--space-5); margin-bottom: var(--space-4);
+  }
+  .claim-summary-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--gray-400); margin-bottom: var(--space-2); }
+  .claim-summary-desc { font-size: 14px; color: var(--navy); line-height: 1.6; white-space: pre-wrap; }
+  .claim-summary-files { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+  .claim-file-tag { font-size: 11px; color: var(--gray-600); background: var(--gray-100); padding: 2px 8px; border-radius: var(--radius-sm); display: flex; align-items: center; gap: 4px; }
+
+  @media (max-width: 640px) {
+    .card { padding: var(--space-6); }
+    .header-nav { gap: var(--space-4); }
+    .header-nav a { font-size: 12px; }
+    .step-label { display: none; }
+    .step-line { width: 32px; }
+    .otp-box { width: 40px; height: 40px; font-size: 18px; }
+    .page-list-inner { padding: var(--space-5) var(--space-3); }
+    .reg-card { padding: var(--space-4); }
+    .page-header { flex-direction: column; gap: var(--space-3); }
+    .drawer { width: 100%; }
+    .proto-bar { flex-wrap: wrap; }
+    .proto-bar-label { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══ PROTO BAR ═══ -->
+<div class="proto-bar">
+  <a href="index.html" style="color:#fff;text-decoration:none;font-size:13px;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:4px;margin-right:8px;white-space:nowrap">← Menu</a>
+  <span class="proto-bar-label">warrantini — customer portal</span>
+  <div class="proto-bar-steps">
+    <button class="proto-btn active" data-page="landing">Landing</button>
+    <div class="proto-sep"></div>
+    <button class="proto-btn" data-page="login-email">Login</button>
+    <button class="proto-btn" data-page="login-otp">OTP</button>
+    <div class="proto-sep"></div>
+    <button class="proto-btn" data-page="registrations">Registrations</button>
+    <button class="proto-btn" data-page="registrations-empty">Empty</button>
+    <div class="proto-sep"></div>
+    <button class="proto-btn" data-page="reg-orders">Orders</button>
+    <button class="proto-btn" data-page="reg-items">Items</button>
+    <button class="proto-btn" data-page="reg-confirm">Confirm</button>
+    <button class="proto-btn" data-page="reg-success">Done</button>
+    <div class="proto-sep"></div>
+    <button class="proto-btn" data-page="claims">My Claims</button>
+    <button class="proto-btn" data-page="claim-detail">Claim</button>
+    <div class="proto-sep"></div>
+    <button class="proto-btn" data-page="claim-select">File: Reg</button>
+    <button class="proto-btn" data-page="claim-describe">Describe</button>
+    <button class="proto-btn" data-page="claim-review">Review</button>
+    <button class="proto-btn" data-page="claim-success">Filed</button>
+  </div>
+</div>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+  <div class="header-brand" onclick="navigate('registrations')">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <rect width="28" height="28" rx="6" fill="#2D6A4F"/>
+      <path d="M6 20L14 8L18 14L22 8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M6 20H22" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span class="header-brand-name">Trail Supply Co.</span>
+  </div>
+  <nav>
+    <ul class="header-nav" id="header-nav">
+      <li><a onclick="navigate('registrations')" class="auth-only active" id="nav-registrations">My Registrations</a></li>
+      <li><a onclick="navigate('claims')" class="auth-only" id="nav-claims">My Claims</a></li>
+      <li><a onclick="navigate('warranty-policy')" class="nav-policy" id="nav-warranty-policy"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Warranty Policy</a></li>
+      <li><a onclick="navigate('login-email')" class="auth-only" id="nav-signout">Sign Out</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: LOGIN — EMAIL
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-auth" id="page-login-email" style="background:var(--gray-50)">
+  <div style="max-width:720px;margin:0 auto;padding:var(--space-10) var(--space-4);display:flex;flex-direction:column;gap:var(--space-8)">
+
+    <!-- Hero image -->
+    <div style="width:100%;overflow:hidden;border-radius:var(--radius-xl)">
+      <img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=800&q=80" alt="Trail Supply Co." style="width:100%;max-height:320px;object-fit:cover;display:block">
+    </div>
+
+    <!-- Welcome headline + copy -->
+    <div style="text-align:center">
+      <h2 style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:var(--navy);font-family:var(--font-display);margin:0">Welcome to Trail Supply Warranty Center</h2>
+      <p style="margin-top:var(--space-3);color:var(--gray-600);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6;font-size:14px">Register your gear and file warranty claims quickly and easily. We stand behind every product we sell.</p>
+    </div>
+
+    <!-- Email login card -->
+    <div style="display:flex;justify-content:center">
+      <div class="card" style="width:100%;max-width:480px">
+        <h1 class="card-title">Sign In</h1>
+        <p class="card-desc">Enter your email address to access your warranty registrations.</p>
+        <div class="field" style="margin-top:var(--space-6)">
+          <label class="field-label" for="email">Email address</label>
+          <input class="input" type="email" id="email" placeholder="you@example.com" value="alex@gmail.com">
+        </div>
+        <button class="btn btn-primary btn-full mt-4" onclick="navigate('login-otp')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Continue
+        </button>
+      </div>
+    </div>
+
+    <!-- Need Help? section -->
+    <div style="background:var(--white);border-radius:var(--radius-xl);border:1px solid var(--gray-200);padding:var(--space-6);max-width:480px;margin:0 auto;width:100%">
+      <div style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:var(--space-3)">Need Help?</div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+        <a href="tel:+15551234567" style="display:inline-flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--gray-600);text-decoration:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          +1 (555) 123-4567
+        </a>
+        <a href="mailto:support@trailsupply.co" style="display:inline-flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--gray-600);text-decoration:none">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          support@trailsupply.co
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: LOGIN — OTP
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-auth" id="page-login-otp">
+  <div class="card">
+    <a class="card-back" onclick="navigate('login-email')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back
+    </a>
+    <h1 class="card-title">Check your email</h1>
+    <p class="card-desc">We sent a 6-digit code to <strong>alex@gmail.com</strong></p>
+    <div class="otp-group">
+      <input class="otp-box" type="text" maxlength="1" inputmode="numeric" value="4">
+      <input class="otp-box" type="text" maxlength="1" inputmode="numeric" value="8">
+      <input class="otp-box" type="text" maxlength="1" inputmode="numeric" value="2">
+      <input class="otp-box" type="text" maxlength="1" inputmode="numeric" value="9">
+      <input class="otp-box" type="text" maxlength="1" inputmode="numeric" value="1">
+      <input class="otp-box" type="text" maxlength="1" inputmode="numeric" value="">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="navigate('registrations')">Verify</button>
+    <div class="resend-link mt-4">
+      Didn't receive it? <a>Resend code</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: MY REGISTRATIONS
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-list" id="page-registrations">
+  <div class="page-list-inner">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Registrations</h1>
+        <p class="page-subtitle">Your warranty coverage at a glance.</p>
+      </div>
+      <a class="btn btn-primary btn-sm" onclick="navigate('reg-orders')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Register New
+      </a>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterTab(this,'all')">All <span class="filter-count">5</span></button>
+      <button class="filter-tab" onclick="filterTab(this,'active')">Active <span class="filter-count">3</span></button>
+      <button class="filter-tab" onclick="filterTab(this,'expired')">Expired <span class="filter-count">1</span></button>
+      <button class="filter-tab" onclick="filterTab(this,'other')">Other <span class="filter-count">1</span></button>
+    </div>
+
+    <div class="reg-list" id="reg-list">
+      <!-- Card 1: Active, just registered -->
+      <div class="reg-card" data-status="active" onclick="openDrawer('atmos')">
+        <div class="reg-card-top">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div class="reg-info">
+            <div class="reg-product">Osprey Atmos AG 65</div>
+            <div class="reg-meta">
+              <span class="reg-id">reg_8k2mx9</span>
+              <span class="reg-meta-sep">&middot;</span><span>Backpacks</span>
+              <span class="reg-meta-sep">&middot;</span><span>OSP-ATM65-GRN</span>
+            </div>
+          </div>
+          <span class="badge badge-active reg-badge">Active</span>
+        </div>
+        <div class="reg-coverage">
+          <div class="coverage-bar-wrap"><div class="coverage-bar green" style="width:4%"></div></div>
+          <span class="coverage-dates">Mar 14, 2026 — Mar 14, 2028</span>
+        </div>
+        <div class="reg-footer">
+          <span class="reg-order">Order <span>#5821</span></span>
+          <span class="reg-ts" style="color:var(--gray-400)">Registered today</span>
+        </div>
+      </div>
+
+      <!-- Card 2: Active, mid-coverage -->
+      <div class="reg-card" data-status="active" onclick="openDrawer('beta')">
+        <div class="reg-card-top">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div class="reg-info">
+            <div class="reg-product">Arc'teryx Beta AR Jacket</div>
+            <div class="reg-meta">
+              <span class="reg-id">reg_3j7fp1</span>
+              <span class="reg-meta-sep">&middot;</span><span>Outerwear</span>
+              <span class="reg-meta-sep">&middot;</span><span>ARC-BETA-BLK</span>
+            </div>
+          </div>
+          <span class="badge badge-active reg-badge">Active</span>
+        </div>
+        <div class="reg-coverage">
+          <div class="coverage-bar-wrap"><div class="coverage-bar green" style="width:38%"></div></div>
+          <span class="coverage-dates">Jan 15, 2026 — Jan 15, 2029</span>
+        </div>
+        <div class="reg-footer">
+          <span class="reg-order">Order <span>#5634</span></span>
+          <span class="reg-ts" style="color:var(--gray-400)">Registered Jan 20, 2026</span>
+        </div>
+      </div>
+
+      <!-- Card 3: Active, nearing expiration -->
+      <div class="reg-card" data-status="active" onclick="openDrawer('traeger')">
+        <div class="reg-card-top">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div class="reg-info">
+            <div class="reg-product">Traeger Pro 575 Pellet Grill</div>
+            <div class="reg-meta">
+              <span class="reg-id">reg_2n9vk5</span>
+              <span class="reg-meta-sep">&middot;</span><span>Grills</span>
+              <span class="reg-meta-sep">&middot;</span><span>TRG-P575-BRZ</span>
+            </div>
+          </div>
+          <span class="badge badge-active reg-badge">Active</span>
+        </div>
+        <div class="reg-coverage">
+          <div class="coverage-bar-wrap"><div class="coverage-bar amber" style="width:82%"></div></div>
+          <span class="coverage-dates">Nov 10, 2024 — Nov 10, 2026</span>
+        </div>
+        <div class="reg-footer">
+          <span class="reg-order">Order <span>#5102</span></span>
+          <span class="reg-ts" style="color:var(--color-warning-text)">Expires in 241 days</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Expired -->
+      <div class="reg-card" data-status="expired" style="opacity:0.7">
+        <div class="reg-card-top">
+          <div class="reg-icon" style="background:var(--gray-100)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="reg-info">
+            <div class="reg-product">Nalgene Wide Mouth 32oz</div>
+            <div class="reg-meta">
+              <span class="reg-id">reg_6m4tp8</span>
+              <span class="reg-meta-sep">&middot;</span><span>Hydration</span>
+              <span class="reg-meta-sep">&middot;</span><span>NAL-WM32-BLU</span>
+            </div>
+          </div>
+          <span class="badge badge-expired reg-badge">Expired</span>
+        </div>
+        <div class="reg-coverage">
+          <div class="coverage-bar-wrap"><div class="coverage-bar gray" style="width:100%"></div></div>
+          <span class="coverage-dates">Mar 1, 2024 — Mar 1, 2025</span>
+        </div>
+        <div class="reg-footer">
+          <span class="reg-order">Order <span>#4201</span></span>
+          <span class="reg-ts" style="color:var(--gray-400)">Expired Mar 1, 2025</span>
+        </div>
+      </div>
+
+      <!-- Card 5: Replaced -->
+      <div class="reg-card" data-status="other" style="opacity:0.7">
+        <div class="reg-card-top">
+          <div class="reg-icon" style="background:var(--color-info-bg)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          </div>
+          <div class="reg-info">
+            <div class="reg-product">YETI Rambler 26oz</div>
+            <div class="reg-meta">
+              <span class="reg-id">reg_1w8hc3</span>
+              <span class="reg-meta-sep">&middot;</span><span>Drinkware</span>
+              <span class="reg-meta-sep">&middot;</span><span>YTI-RAM26-NVY</span>
+            </div>
+          </div>
+          <span class="badge badge-replaced reg-badge">Replaced</span>
+        </div>
+        <div class="reg-coverage">
+          <div class="coverage-bar-wrap"><div class="coverage-bar gray" style="width:100%"></div></div>
+          <span class="coverage-dates">Jun 12, 2025 — Jun 12, 2026</span>
+        </div>
+        <div class="reg-footer">
+          <span class="reg-order">Order <span>#4830</span></span>
+          <span class="reg-ts" style="color:var(--color-info-text)">Replaced via claim clm_4r8nq1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: MY REGISTRATIONS — EMPTY STATE
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-list" id="page-registrations-empty">
+  <div class="page-list-inner">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Registrations</h1>
+        <p class="page-subtitle">Your warranty coverage at a glance.</p>
+      </div>
+    </div>
+    <div class="empty-state">
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+      </svg>
+      <h2 class="empty-title">No registrations yet</h2>
+      <p class="empty-desc">Register your products to activate warranty coverage and easily file claims if something goes wrong.</p>
+      <a class="btn btn-primary" style="margin-top:var(--space-6)" onclick="navigate('reg-orders')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Register a Product
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     REGISTRATION FLOW: SELECT ORDER
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-reg-orders">
+  <div class="steps" id="steps-orders"></div>
+  <div class="card wide">
+    <a class="card-back" onclick="navigate('registrations')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to registrations
+    </a>
+    <h1 class="card-title">Select an order</h1>
+    <p class="card-desc">Choose the order containing the product you'd like to register.</p>
+    <div class="order-list">
+      <div class="order-card" onclick="selectCard(this,'reg-items')">
+        <div class="order-card-header">
+          <span class="order-number">#5821</span>
+          <span class="order-date">Feb 28, 2026</span>
+        </div>
+        <div class="order-summary">Osprey Atmos AG 65 + 4 more &middot; 5 items &middot; $2,999.88</div>
+        <div class="order-items-toggle" onclick="event.stopPropagation(); toggleOrderItems(this)">
+          <span>View items</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="order-items-list" style="display:none">
+          <div class="order-item-row"><span class="order-item-name">Osprey Atmos AG 65</span><span class="order-item-sku">OSP-ATM65-GRN</span><span class="order-item-price">$349.95</span></div>
+          <div class="order-item-row"><span class="order-item-name">Nalgene Wide Mouth 32oz</span><span class="order-item-sku">NAL-WM32-BLU</span><span class="order-item-price">$14.95</span></div>
+          <div class="order-item-row"><span class="order-item-name">Trail Supply Gift Card</span><span class="order-item-sku">TS-GC-050</span><span class="order-item-price">$50.00</span></div>
+          <div class="order-item-row"><span class="order-item-name">YETI Rambler 26oz Bottle</span><span class="order-item-sku">YET-RAM26-BLK</span><span class="order-item-price">$34.99</span></div>
+          <div class="order-item-row"><span class="order-item-name">Trek FX+ 1S</span><span class="order-item-sku">TRK-FXP1S-BLK</span><span class="order-item-price">$2,549.99</span></div>
+        </div>
+      </div>
+      <div class="order-card" onclick="selectCard(this,'reg-items')">
+        <div class="order-card-header">
+          <span class="order-number">#5634</span>
+          <span class="order-date">Jan 15, 2026</span>
+        </div>
+        <div class="order-summary">Arc'teryx Beta AR Jacket &middot; 1 item &middot; $599.00</div>
+        <div class="order-items-toggle" onclick="event.stopPropagation(); toggleOrderItems(this)">
+          <span>View items</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="order-items-list" style="display:none">
+          <div class="order-item-row"><span class="order-item-name">Arc'teryx Beta AR Jacket</span><span class="order-item-sku">ARC-BETA-BLK</span><span class="order-item-price">$599.00</span></div>
+        </div>
+      </div>
+      <div class="order-card" onclick="selectCard(this,'reg-items')">
+        <div class="order-card-header">
+          <span class="order-number">#5102</span>
+          <span class="order-date">Nov 3, 2025</span>
+        </div>
+        <div class="order-summary">Traeger Pro 575 Pellet Grill &middot; 1 item &middot; $799.99</div>
+        <div class="order-items-toggle" onclick="event.stopPropagation(); toggleOrderItems(this)">
+          <span>View items</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="order-items-list" style="display:none">
+          <div class="order-item-row"><span class="order-item-name">Traeger Pro 575 Pellet Grill</span><span class="order-item-sku">TRG-PRO575</span><span class="order-item-price">$799.99</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     REGISTRATION FLOW: SELECT ITEM
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-reg-items">
+  <div class="steps" id="steps-items"></div>
+  <div class="card wide">
+    <a class="card-back" onclick="navigate('reg-orders')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to orders
+    </a>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2)">
+      <h1 class="card-title" style="margin-bottom:0">Order #5821</h1>
+      <span class="order-date">Feb 28, 2026</span>
+    </div>
+    <p class="card-desc">Select the item you'd like to register for warranty coverage.</p>
+    <div class="item-list">
+      <!-- Included: has matching rule with coverage -->
+      <div class="item-card" onclick="selectItem(this, 'included')" data-coverage="included">
+        <div class="item-img">
+          <img src="images/backpack.jpg" alt="Osprey Atmos AG 65" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="item-info">
+          <div class="item-name">Osprey Atmos AG 65</div>
+          <div class="item-meta">SKU: OSP-ATM65-GRN &middot; Backpacks</div>
+          <div class="item-coverage coverage-included">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Covered &middot; 24 months
+          </div>
+        </div>
+        <span class="item-price">$349.95</span>
+      </div>
+      <!-- Already registered -->
+      <div class="item-card disabled">
+        <div class="item-img">
+          <img src="images/water-bottle.jpg" alt="Nalgene Wide Mouth 32oz" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="item-info">
+          <div class="item-name">Nalgene Wide Mouth 32oz</div>
+          <div class="item-meta">SKU: NAL-WM32-BLU &middot; Hydration</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <span class="badge badge-registered">Registered</span>
+          <span class="item-price">$14.95</span>
+        </div>
+      </div>
+      <!-- Excluded: matched an exclude rule, no coverage -->
+      <div class="item-card excluded" data-coverage="excluded">
+        <div class="item-img">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div class="item-info">
+          <div class="item-name">Trail Supply Gift Card</div>
+          <div class="item-meta">SKU: TS-GC-050 &middot; Gift Cards</div>
+          <div class="item-coverage coverage-excluded">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            No coverage &middot; Excluded
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <span class="badge badge-excluded">No Coverage</span>
+          <span class="item-price">$50.00</span>
+        </div>
+      </div>
+      <!-- Expired coverage: had coverage but window has passed -->
+      <div class="item-card expired-coverage" onclick="selectItem(this, 'expired')" data-coverage="expired">
+        <div class="item-img">
+          <img src="images/tumbler.jpg" alt="YETI Rambler 26oz Bottle" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="item-info">
+          <div class="item-name">YETI Rambler 26oz Bottle</div>
+          <div class="item-meta">SKU: YET-RAM26-BLK &middot; Drinkware</div>
+          <div class="item-coverage coverage-expired">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            Coverage expired &middot; Was 3 months (ended Jan 28, 2026)
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <span class="badge badge-expired-coverage">Expired</span>
+          <span class="item-price">$34.99</span>
+        </div>
+      </div>
+      <!-- Included with usage-based coverage -->
+      <div class="item-card" onclick="selectItem(this, 'included-usage')" data-coverage="included-usage">
+        <div class="item-img">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+        </div>
+        <div class="item-info">
+          <div class="item-name">Trek FX+ 1S</div>
+          <div class="item-meta">SKU: TRK-FXP1S-BLK &middot; E-Bikes</div>
+          <div class="item-coverage coverage-included">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+            Covered &middot; 36 months or 500 miles
+          </div>
+        </div>
+        <span class="item-price">$2,549.99</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     REGISTRATION FLOW: CONFIRM
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-reg-confirm">
+  <div class="steps" id="steps-confirm"></div>
+  <div class="card">
+    <a class="card-back" onclick="navigate('reg-items')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to items
+    </a>
+    <h1 class="card-title">Confirm registration</h1>
+    <p class="card-desc">Review your warranty details before registering.</p>
+
+    <!-- Expired coverage warning (shown conditionally via JS) -->
+    <div class="warning-banner" id="confirm-expired-warning" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong>Coverage has expired.</strong> The warranty coverage window for this item has passed. You can still register it, but the coverage period will be recorded as expired. This will be noted in your confirmation email.</div>
+    </div>
+
+    <!-- Product details -->
+    <div class="summary-rows" id="confirm-product-rows">
+      <div class="summary-row"><span class="summary-label">Product</span><span class="summary-value" id="confirm-product">Osprey Atmos AG 65</span></div>
+      <div class="summary-row"><span class="summary-label">Order</span><span class="summary-value mono">#5821</span></div>
+      <div class="summary-row"><span class="summary-label">SKU</span><span class="summary-value mono" id="confirm-sku">OSP-ATM65-GRN</span></div>
+    </div>
+
+    <!-- Warranty coverage details -->
+    <div style="font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray-400);margin-bottom:var(--space-2)">Warranty Coverage</div>
+    <div class="summary-rows" id="confirm-coverage-rows">
+      <div class="summary-row"><span class="summary-label">Coverage period</span><span class="summary-value" id="confirm-period">24 months</span></div>
+      <div class="summary-row"><span class="summary-label">Coverage starts</span><span class="summary-value" id="confirm-starts">Mar 14, 2026</span></div>
+      <div class="summary-row"><span class="summary-label">Coverage ends</span><span class="summary-value" id="confirm-ends">Mar 14, 2028</span></div>
+      <div class="summary-row" id="confirm-status-row" style="display:none"><span class="summary-label">Status</span><span class="summary-value" id="confirm-status"></span></div>
+      <div class="summary-row"><span class="summary-label">Resolution type</span><span class="summary-value" id="confirm-resolution">Replace Part</span></div>
+      <div class="summary-row"><span class="summary-label">Return required</span><span class="summary-value" id="confirm-return">Yes — you'll need to return the item if filing a claim</span></div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="serial">Serial number <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+      <input class="input" type="text" id="serial" placeholder="Enter serial number if available">
+      <div class="field-help">You can find this on the product tag or packaging.</div>
+    </div>
+    <button class="btn btn-primary btn-full mt-6" onclick="navigate('reg-success')">Register Warranty</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     REGISTRATION FLOW: SUCCESS
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-reg-success">
+  <div class="card" style="text-align:center">
+    <div class="success-icon animate" id="success-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h1 class="card-title">Warranty registered</h1>
+    <p class="card-desc" style="max-width:360px;margin:0 auto var(--space-6)">Your warranty for the Osprey Atmos AG 65 is now active. We've sent a confirmation to alex@gmail.com.</p>
+    <div class="success-detail">
+      <div class="success-detail-row"><span class="success-detail-label">Registration ID</span><span class="success-detail-value mono">reg_8k2mx9</span></div>
+      <div class="success-detail-row"><span class="success-detail-label">Coverage</span><span class="success-detail-value">Mar 14, 2026 — Mar 14, 2028</span></div>
+      <div class="success-detail-row"><span class="success-detail-label">Status</span><span class="success-detail-value"><span class="badge badge-active">Active</span></span></div>
+    </div>
+    <button class="btn btn-primary btn-full mb-4" onclick="navigate('registrations')">View My Registrations</button>
+    <button class="btn btn-ghost btn-full" onclick="navigate('reg-orders')">Register Another Product</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: WARRANTY POLICY
+     ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-warranty-policy">
+  <div class="card" style="max-width:720px;margin:0 auto">
+    <h1 class="card-title" style="font-size:22px;margin-bottom:var(--space-2)">Trail Supply Co. Warranty Policy</h1>
+    <p style="font-size:12px;color:var(--gray-400);margin-bottom:var(--space-6)">Last updated: March 2026</p>
+
+    <div style="font-size:14px;color:var(--gray-600);line-height:1.8">
+      <h2 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:var(--space-3);margin-top:0">Overview</h2>
+      <p style="margin-bottom:var(--space-4)">Trail Supply Co. stands behind the quality of every product we sell. Our warranty covers manufacturing defects in materials and workmanship under normal use for the duration specified for each product category.</p>
+
+      <h2 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:var(--space-3);margin-top:var(--space-6)">Coverage by Product Category</h2>
+      <div style="border:1px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:var(--space-4)">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:var(--gray-50)">
+              <th style="text-align:left;padding:var(--space-3) var(--space-4);font-weight:600;color:var(--navy);border-bottom:1px solid var(--gray-200)">Category</th>
+              <th style="text-align:left;padding:var(--space-3) var(--space-4);font-weight:600;color:var(--navy);border-bottom:1px solid var(--gray-200)">Duration</th>
+              <th style="text-align:left;padding:var(--space-3) var(--space-4);font-weight:600;color:var(--navy);border-bottom:1px solid var(--gray-200)">Resolution</th>
+              <th style="text-align:left;padding:var(--space-3) var(--space-4);font-weight:600;color:var(--navy);border-bottom:1px solid var(--gray-200)">Return Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="border-bottom:1px solid var(--gray-200)">
+              <td style="padding:var(--space-3) var(--space-4)">Backpacks (Osprey)</td>
+              <td style="padding:var(--space-3) var(--space-4)">36 months or 5,000 miles</td>
+              <td style="padding:var(--space-3) var(--space-4)">Replace Part</td>
+              <td style="padding:var(--space-3) var(--space-4)">Yes</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--gray-200)">
+              <td style="padding:var(--space-3) var(--space-4)">Grills</td>
+              <td style="padding:var(--space-3) var(--space-4)">48 months</td>
+              <td style="padding:var(--space-3) var(--space-4)">Repair</td>
+              <td style="padding:var(--space-3) var(--space-4)">Yes</td>
+            </tr>
+            <tr style="border-bottom:1px solid var(--gray-200)">
+              <td style="padding:var(--space-3) var(--space-4)">Cookware</td>
+              <td style="padding:var(--space-3) var(--space-4)">24 months</td>
+              <td style="padding:var(--space-3) var(--space-4)">Replace Full</td>
+              <td style="padding:var(--space-3) var(--space-4)">No</td>
+            </tr>
+            <tr>
+              <td style="padding:var(--space-3) var(--space-4)">All other products</td>
+              <td style="padding:var(--space-3) var(--space-4)">12 months</td>
+              <td style="padding:var(--space-3) var(--space-4)">Refund</td>
+              <td style="padding:var(--space-3) var(--space-4)">No</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:var(--space-3);margin-top:var(--space-6)">What's Covered</h2>
+      <ul style="padding-left:var(--space-5);margin-bottom:var(--space-4)">
+        <li style="margin-bottom:var(--space-2)">Manufacturing defects in materials and workmanship</li>
+        <li style="margin-bottom:var(--space-2)">Mechanical and electrical component failures under normal use</li>
+        <li style="margin-bottom:var(--space-2)">Structural integrity issues (seams, zippers, buckles, welds)</li>
+      </ul>
+
+      <h2 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:var(--space-3);margin-top:var(--space-6)">What's Not Covered</h2>
+      <ul style="padding-left:var(--space-5);margin-bottom:var(--space-4)">
+        <li style="margin-bottom:var(--space-2)">Normal wear and tear</li>
+        <li style="margin-bottom:var(--space-2)">Damage caused by misuse, abuse, or negligence</li>
+        <li style="margin-bottom:var(--space-2)">Unauthorized modifications or repairs</li>
+        <li style="margin-bottom:var(--space-2)">Cosmetic damage that does not affect functionality</li>
+        <li style="margin-bottom:var(--space-2)">Products purchased from unauthorized retailers</li>
+      </ul>
+
+      <h2 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:var(--space-3);margin-top:var(--space-6)">How to File a Claim</h2>
+      <ol style="padding-left:var(--space-5);margin-bottom:var(--space-4)">
+        <li style="margin-bottom:var(--space-2)">Navigate to <strong>My Claims</strong> and select "File a Claim"</li>
+        <li style="margin-bottom:var(--space-2)">Select the registered product you are filing a claim for</li>
+        <li style="margin-bottom:var(--space-2)">Describe the issue and upload photos of the defect</li>
+        <li style="margin-bottom:var(--space-2)">Our team will review your claim within 2 business days</li>
+        <li style="margin-bottom:var(--space-2)">If approved, we will process the resolution (repair, replacement, or refund) and provide return instructions if applicable</li>
+      </ol>
+
+      <h2 style="font-size:16px;font-weight:700;color:var(--navy);margin-bottom:var(--space-3);margin-top:var(--space-6)">Conditions</h2>
+      <ul style="padding-left:var(--space-5);margin-bottom:var(--space-4)">
+        <li style="margin-bottom:var(--space-2)">Products must be registered within 30 days of purchase to be eligible for warranty coverage</li>
+        <li style="margin-bottom:var(--space-2)">Proof of purchase is required (your order is automatically linked during registration)</li>
+        <li style="margin-bottom:var(--space-2)">When a return is required, the item must be shipped within 14 days of claim approval</li>
+        <li style="margin-bottom:var(--space-2)">Warranty coverage begins on the date of purchase and is non-transferable</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: MY CLAIMS
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-list" id="page-claims">
+  <div class="page-list-inner">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Claims</h1>
+        <p class="page-subtitle">Track your warranty claims and their status.</p>
+      </div>
+      <a class="btn btn-primary btn-sm" onclick="navigate('claim-select')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        File a Claim
+      </a>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterClaimTab(this,'all')">All <span class="filter-count">3</span></button>
+      <button class="filter-tab" onclick="filterClaimTab(this,'open')">Open <span class="filter-count">2</span></button>
+      <button class="filter-tab" onclick="filterClaimTab(this,'resolved')">Resolved <span class="filter-count">1</span></button>
+    </div>
+
+    <div id="claim-list">
+      <!-- Claim 1: Info Requested — needs customer action -->
+      <div class="claim-card" data-claim-status="open" onclick="navigate('claim-detail')">
+        <div class="claim-card-top">
+          <div class="claim-icon info-requested">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          </div>
+          <div class="claim-info">
+            <div class="claim-product">Arc'teryx Beta AR Jacket</div>
+            <div class="claim-meta">
+              <span style="font-family:var(--font-mono)">clm_7t3nw2</span>
+              <span class="claim-meta-sep">&middot;</span><span>reg_3j7fp1</span>
+              <span class="claim-meta-sep">&middot;</span><span>Filed Feb 28, 2026</span>
+            </div>
+          </div>
+          <span class="badge badge-info-requested">INFO REQUESTED</span>
+        </div>
+        <div class="claim-desc-preview">The waterproof membrane has delaminated along the seams after about 14 months of use. Water now seeps through during moderate rain.</div>
+      </div>
+
+      <!-- Claim 2: In Review -->
+      <div class="claim-card" data-claim-status="open" onclick="navigate('claim-detail')">
+        <div class="claim-card-top">
+          <div class="claim-icon in-review">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="claim-info">
+            <div class="claim-product">Traeger Pro 575 Pellet Grill</div>
+            <div class="claim-meta">
+              <span style="font-family:var(--font-mono)">clm_9x2kp4</span>
+              <span class="claim-meta-sep">&middot;</span><span>reg_2n9vk5</span>
+              <span class="claim-meta-sep">&middot;</span><span>Filed Mar 10, 2026</span>
+            </div>
+          </div>
+          <span class="badge badge-in-review">IN REVIEW</span>
+        </div>
+        <div class="claim-desc-preview">Temperature controller shows inconsistent readings. The display fluctuates between 225°F and 400°F when set to 300°F. Makes it impossible to cook consistently.</div>
+      </div>
+
+      <!-- Claim 3: Fulfilled — resolved -->
+      <div class="claim-card" data-claim-status="resolved" onclick="navigate('claim-detail')">
+        <div class="claim-card-top">
+          <div class="claim-icon fulfilled">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          </div>
+          <div class="claim-info">
+            <div class="claim-product">YETI Rambler 26oz</div>
+            <div class="claim-meta">
+              <span style="font-family:var(--font-mono)">clm_4r8nq1</span>
+              <span class="claim-meta-sep">&middot;</span><span>reg_1w8hc3</span>
+              <span class="claim-meta-sep">&middot;</span><span>Filed Jan 5, 2026</span>
+            </div>
+          </div>
+          <span class="badge badge-fulfilled">FULFILLED</span>
+        </div>
+        <div class="claim-desc-preview">Vacuum seal failed — tumbler no longer keeps drinks cold. Ice melts within an hour.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: MY CLAIMS — EMPTY STATE
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-list" id="page-claims-empty">
+  <div class="page-list-inner">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Claims</h1>
+        <p class="page-subtitle">Track your warranty claims and their status.</p>
+      </div>
+    </div>
+    <div class="empty-state">
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/>
+      </svg>
+      <h2 class="empty-title">No claims yet</h2>
+      <p class="empty-desc">If something goes wrong with a registered product, you can file a warranty claim here.</p>
+      <a class="btn btn-primary" style="margin-top:var(--space-6)" onclick="navigate('claim-select')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        File a Claim
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PAGE: CLAIM DETAIL (Info Requested example)
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-list" id="page-claim-detail">
+  <div class="page-list-inner" style="max-width:640px">
+    <a class="card-back" style="margin-bottom:var(--space-5);display:inline-flex" onclick="navigate('claims')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to claims
+    </a>
+
+    <!-- Header -->
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--space-5)">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400);margin-bottom:2px">clm_7t3nw2</div>
+        <h1 style="font-family:var(--font-display);font-weight:700;font-size:22px;letter-spacing:-0.01em">Arc'teryx Beta AR Jacket</h1>
+        <div style="font-size:13px;color:var(--gray-400);margin-top:2px">reg_3j7fp1 &middot; Filed Feb 28, 2026</div>
+      </div>
+      <span class="badge badge-info-requested" style="margin-top:var(--space-2)">INFO REQUESTED</span>
+    </div>
+
+    <!-- Info request banner -->
+    <div class="info-request-banner">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <div class="info-request-content">
+        <div class="info-request-title">Additional information requested</div>
+        <div class="info-request-desc">The Trail Supply Co. team has asked for more details. Please respond below to continue your claim review.</div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="claim-detail-card">
+      <div style="font-weight:700;font-size:13px;margin-bottom:var(--space-3)">Your description</div>
+      <div style="font-size:14px;color:var(--navy);line-height:1.6;background:var(--gray-50);padding:var(--space-4);border-radius:var(--radius-md);border-left:3px solid var(--gray-200)">
+        The waterproof membrane has delaminated along the seams after about 14 months of use. Water now seeps through during moderate rain. I've tried reapplying DWR treatment but it hasn't helped since the issue is with the internal membrane.
+      </div>
+      <div style="margin-top:var(--space-4)">
+        <div style="font-size:12px;font-weight:600;color:var(--gray-400);margin-bottom:var(--space-2)">Attachments</div>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+          <div class="upload-thumb" style="background:url('https://images.unsplash.com/photo-1622260614927-208ad5d64628?w=128&h=128&fit=crop') center/cover;cursor:pointer" title="buckle-damage.jpg"></div>
+          <div class="upload-thumb" style="background:url('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=128&h=128&fit=crop') center/cover;cursor:pointer" title="seam-detail.jpg"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="claim-detail-card">
+      <div style="font-weight:700;font-size:13px;margin-bottom:var(--space-5)">Activity</div>
+      <div class="claim-timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot agent"></div>
+          <div class="timeline-time">Mar 5, 2026 · 2:15 PM</div>
+          <div class="timeline-actor agent">Support</div>
+          <div class="timeline-text">Could you please provide a close-up photo of the delaminated seams? Also, do you have the original purchase receipt? This will help us process your claim faster.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot customer"></div>
+          <div class="timeline-time">Mar 3, 2026 · 3:45 PM</div>
+          <div class="timeline-actor customer">You</div>
+          <div class="timeline-text">Here are the close-up photos. I don't have the original receipt but the order number is #5634 on your system.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot agent"></div>
+          <div class="timeline-time">Mar 3, 2026 · 10:00 AM</div>
+          <div class="timeline-actor agent">Support</div>
+          <div class="timeline-text">Your claim is being reviewed.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot customer"></div>
+          <div class="timeline-time">Feb 28, 2026 · 4:32 PM</div>
+          <div class="timeline-actor customer">You</div>
+          <div class="timeline-text">Filed claim with description and 2 photos attached.</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot system"></div>
+          <div class="timeline-time">Feb 28, 2026 · 4:32 PM</div>
+          <div class="timeline-actor system">System</div>
+          <div class="timeline-text">Claim <span style="font-family:var(--font-mono);font-size:12px">clm_7t3nw2</span> submitted.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reply form -->
+    <div class="claim-detail-card">
+      <div style="font-weight:700;font-size:13px;margin-bottom:var(--space-3)">Reply</div>
+      <textarea class="input" style="min-height:100px;resize:vertical;font-family:var(--font-ui);font-size:14px;line-height:1.5;padding:var(--space-3)" placeholder="Type your response...">Here are the close-up photos. I don't have the original receipt but the order number is #5634 on your system.</textarea>
+      <div style="margin-top:var(--space-3)">
+        <div class="upload-zone" style="padding:var(--space-4)">
+          <div class="upload-zone-text">+ Add photos or files</div>
+          <div class="upload-zone-hint">JPEG, PNG, PDF · Max 10MB each</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-top:var(--space-4)">
+        <button class="btn btn-primary" onclick="submitClaimReply()">Send Reply</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FILE CLAIM FLOW: SELECT REGISTRATION
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-claim-select">
+  <div class="steps" id="steps-claim-select"></div>
+  <div class="card wide">
+    <a class="card-back" onclick="navigate('claims')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to claims
+    </a>
+    <h1 class="card-title">Select a registration</h1>
+    <p class="card-desc">Choose the product you need to file a warranty claim for.</p>
+    <div style="margin-top:var(--space-5)">
+      <div class="claim-reg-card" onclick="selectClaimReg(this, 'atmos')">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:15px">Osprey Atmos AG 65</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:1px">reg_8k2mx9 &middot; Coverage: Mar 14, 2026 — Mar 14, 2028</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+      </div>
+      <div class="claim-reg-card" onclick="selectClaimReg(this, 'beta')">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:15px">Arc'teryx Beta AR Jacket</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:1px">reg_3j7fp1 &middot; Coverage: Jan 15, 2026 — Jan 15, 2029</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+      </div>
+      <div class="claim-reg-card" onclick="selectClaimReg(this, 'traeger')">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:15px">Traeger Pro 575 Pellet Grill</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:1px">reg_2n9vk5 &middot; Coverage: Nov 10, 2024 — Nov 10, 2026</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+      </div>
+      <div class="claim-reg-card" onclick="selectClaimReg(this, 'trek')">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <div class="reg-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:15px">Trek FX+ 1S</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:1px">reg_9p2ek7 &middot; Coverage: Mar 14, 2026 — Mar 14, 2029</div>
+          </div>
+          <span class="badge badge-active">Active</span>
+        </div>
+      </div>
+      <div class="claim-reg-card disabled">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <div class="reg-icon" style="background:var(--gray-100)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:var(--font-display);font-weight:700;font-size:15px;color:var(--gray-400)">Nalgene Wide Mouth 32oz</div>
+            <div style="font-size:12px;color:var(--gray-400);margin-top:1px">reg_6m4tp8 &middot; Expired Mar 1, 2025</div>
+          </div>
+          <span class="badge badge-expired">Expired</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FILE CLAIM FLOW: DESCRIBE ISSUE
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-claim-describe">
+  <div class="steps" id="steps-claim-describe"></div>
+  <div class="card wide">
+    <a class="card-back" onclick="navigate('claim-select')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to registrations
+    </a>
+    <div style="display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-5);padding:var(--space-3) var(--space-4);background:var(--gray-50);border-radius:var(--radius-md)">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/></svg>
+      <div>
+        <div style="font-weight:700;font-size:14px">Osprey Atmos AG 65</div>
+        <div style="font-size:12px;color:var(--gray-400)">reg_8k2mx9 &middot; Active until Mar 14, 2028</div>
+      </div>
+    </div>
+    <h1 class="card-title">Describe the issue</h1>
+    <p class="card-desc">Tell us what happened. Be as specific as possible to help us review your claim quickly.</p>
+    <div class="field" style="margin-top:var(--space-5)">
+      <label class="field-label">What went wrong? <span style="color:var(--gray-400);font-weight:400">(min 20 characters)</span></label>
+      <textarea class="input" id="claim-description" style="min-height:120px;resize:vertical;font-family:var(--font-ui);font-size:14px;line-height:1.5;padding:var(--space-3)" placeholder="Describe the defect or issue you're experiencing...">The main hip belt buckle cracked during a routine backpacking trip. The plastic appears to have become brittle and snapped when I was adjusting the fit. The pack is now unusable as it can't be properly secured.</textarea>
+    </div>
+    <div class="field" style="margin-top:var(--space-5)">
+      <label class="field-label">Photos or documents <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+      <div class="upload-zone" onclick="simulateUpload()">
+        <div class="upload-zone-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <div class="upload-zone-text">Drag and drop files, or <span style="color:var(--blue);font-weight:600">click to browse</span></div>
+        <div class="upload-zone-hint">JPEG, PNG, PDF &middot; Max 10MB each &middot; Up to 5 files</div>
+      </div>
+      <div class="upload-previews" id="upload-previews">
+        <div class="upload-thumb" style="background:url('https://images.unsplash.com/photo-1622260614927-208ad5d64628?w=128&h=128&fit=crop') center/cover;position:relative">
+          <span class="upload-thumb-remove" onclick="event.stopPropagation();this.parentElement.remove()">×</span>
+        </div>
+        <div class="upload-thumb" style="background:url('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=128&h=128&fit=crop') center/cover;position:relative">
+          <span class="upload-thumb-remove" onclick="event.stopPropagation();this.parentElement.remove()">×</span>
+        </div>
+      </div>
+    </div>
+    <div class="field" id="claim-usage-section" style="margin-top:var(--space-5);display:none">
+      <label class="field-label">Current usage</label>
+      <div class="usage-input-group">
+        <input class="input" type="number" id="claim-usage" placeholder="0" value="623" style="max-width:120px">
+        <span id="claim-usage-unit" style="font-size:13px;color:var(--gray-400);font-weight:500">miles</span>
+      </div>
+      <div class="field-help" id="claim-usage-help">Enter the current odometer reading for your Trek FX+ 1S.</div>
+    </div>
+    <div class="field" style="margin-top:var(--space-5)">
+      <label class="field-label">Additional notes <span style="color:var(--gray-400);font-weight:400">(optional)</span></label>
+      <textarea class="input" id="claim-notes" style="min-height:80px;resize:vertical;font-family:var(--font-ui);font-size:14px;line-height:1.5;padding:var(--space-3)" placeholder="Any other details you'd like to share..."></textarea>
+    </div>
+    <button class="btn btn-primary btn-full mt-6" onclick="navigate('claim-review')">Continue</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FILE CLAIM FLOW: REVIEW & SUBMIT
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-claim-review">
+  <div class="steps" id="steps-claim-review"></div>
+  <div class="card">
+    <a class="card-back" onclick="navigate('claim-describe')">
+      <svg class="icon-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Back to description
+    </a>
+    <h1 class="card-title">Review your claim</h1>
+    <p class="card-desc">Please review the details below before submitting.</p>
+
+    <!-- Usage over-limit warning (shown conditionally via JS) -->
+    <div class="warning-banner" id="claim-usage-warning" style="display:none;margin-top:var(--space-5)">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong>Usage exceeds coverage limit.</strong> Your reported usage of <span id="review-usage-value">623</span> miles exceeds the <span id="review-usage-limit">500</span>-mile coverage limit for this product. You can still submit this claim, but it will be noted during review. This will also appear in your confirmation email.</div>
+    </div>
+
+    <div class="claim-summary-block" style="margin-top:var(--space-5)">
+      <div class="claim-summary-label">Product</div>
+      <div class="summary-rows" style="margin-top:0">
+        <div class="summary-row"><span class="summary-label">Product</span><span class="summary-value" id="review-product">Osprey Atmos AG 65</span></div>
+        <div class="summary-row"><span class="summary-label">Registration</span><span class="summary-value mono" id="review-reg-id">reg_8k2mx9</span></div>
+        <div class="summary-row"><span class="summary-label">Coverage</span><span class="summary-value" id="review-coverage">Mar 14, 2026 — Mar 14, 2028</span></div>
+      </div>
+    </div>
+
+    <div class="claim-summary-block" id="review-usage-block" style="display:none">
+      <div class="claim-summary-label">Usage</div>
+      <div class="summary-rows" style="margin-top:0">
+        <div class="summary-row"><span class="summary-label">Current usage</span><span class="summary-value" id="review-current-usage">623 miles</span></div>
+        <div class="summary-row"><span class="summary-label">Coverage limit</span><span class="summary-value" id="review-coverage-limit">500 miles</span></div>
+        <div class="summary-row" id="review-usage-status-row"><span class="summary-label">Status</span><span class="summary-value" id="review-usage-status"><span class="badge badge-expired-coverage">Over Limit</span></span></div>
+      </div>
+    </div>
+
+    <div class="claim-summary-block">
+      <div class="claim-summary-label">Issue Description</div>
+      <div class="claim-summary-desc" id="review-description">The main hip belt buckle cracked during a routine backpacking trip. The plastic appears to have become brittle and snapped when I was adjusting the fit. The pack is now unusable as it can't be properly secured.</div>
+    </div>
+
+    <div class="claim-summary-block" id="review-notes-block" style="display:none">
+      <div class="claim-summary-label">Additional Notes</div>
+      <div class="claim-summary-desc" id="review-notes-text"></div>
+    </div>
+
+    <div class="claim-summary-block">
+      <div class="claim-summary-label">Attachments</div>
+      <div class="claim-summary-files">
+        <span class="claim-file-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          buckle-crack.jpg
+        </span>
+        <span class="claim-file-tag">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          hip-belt-detail.jpg
+        </span>
+      </div>
+    </div>
+
+    <button class="btn btn-primary btn-full mt-6" onclick="navigate('claim-success')">Submit Claim</button>
+    <button class="btn btn-ghost btn-full mt-3" onclick="navigate('claim-describe')">Edit Claim</button>
+    <button class="btn btn-ghost btn-full mt-2" style="color:var(--red)" onclick="navigate('claims')">Cancel Claim</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     FILE CLAIM FLOW: SUCCESS
+     ═══════════════════════════════════════════════════════ -->
+<div class="page page-flow" id="page-claim-success">
+  <div class="card" style="text-align:center">
+    <div class="success-icon animate" id="claim-success-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h1 class="card-title">Claim submitted</h1>
+    <p class="card-desc" style="max-width:360px;margin:0 auto var(--space-6)">We've received your claim for the Osprey Atmos AG 65. We'll review it and get back to you.</p>
+    <div class="success-detail">
+      <div class="success-detail-row"><span class="success-detail-label">Claim ID</span><span class="success-detail-value mono">clm_3k8wp6</span></div>
+      <div class="success-detail-row"><span class="success-detail-label">Product</span><span class="success-detail-value">Osprey Atmos AG 65</span></div>
+      <div class="success-detail-row"><span class="success-detail-label">Status</span><span class="success-detail-value"><span class="badge badge-submitted">SUBMITTED</span></span></div>
+    </div>
+    <button class="btn btn-primary btn-full mb-4" onclick="navigate('claims')">View My Claims</button>
+    <button class="btn btn-ghost btn-full" onclick="navigate('registrations')">Back to Registrations</button>
+  </div>
+</div>
+
+<!-- ═══ LANDING PAGE ══════════════════════════════════════════════
+     Public branded landing page — the first thing customers see
+     at /{slug}. Shows hero, welcome headline, copy, action cards,
+     contact section. No auth required.
+     ═══════════════════════════════════════════════════════ -->
+<div class="page active" id="page-landing" style="background:var(--gray-50)">
+  <div style="max-width:var(--content-max-portal);margin:0 auto;padding:var(--space-10) var(--space-4);display:flex;flex-direction:column;gap:var(--space-8)">
+
+    <!-- Hero image -->
+    <div style="width:100%;overflow:hidden;border-radius:var(--radius-xl)">
+      <img src="https://images.unsplash.com/photo-1501555088652-021faa106b9b?w=800&q=80" alt="Trail Supply Co." style="width:100%;max-height:320px;object-fit:cover;display:block">
+    </div>
+
+    <!-- Welcome headline + copy -->
+    <div style="text-align:center">
+      <h2 style="font-size:24px;font-weight:700;letter-spacing:-0.02em;color:var(--navy);font-family:var(--font-display);margin:0">Welcome to Trail Supply Warranty Center</h2>
+      <p style="margin-top:var(--space-3);color:var(--gray-600);max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6;font-size:14px">Register your gear and file warranty claims quickly and easily. We stand behind every product we sell.</p>
+    </div>
+
+    <!-- Action cards -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+      <a onclick="navigate('reg-orders')" style="background:var(--white);border-radius:var(--radius-xl);border:1px solid var(--gray-200);padding:var(--space-6);cursor:pointer;text-decoration:none;transition:border-color var(--duration-normal) var(--ease-standard),box-shadow var(--duration-normal) var(--ease-standard)" onmouseover="this.style.borderColor='var(--blue)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:var(--space-3)"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <div style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:var(--space-1)">Register a Product</div>
+        <p style="font-size:13px;color:var(--gray-400);margin:0">Activate your warranty coverage by registering your purchase.</p>
+        <span style="display:inline-block;margin-top:var(--space-3);font-size:13px;font-weight:600;color:var(--blue)">Get Started &rarr;</span>
+      </a>
+
+      <a onclick="navigate('warranty-policy')" style="background:var(--white);border-radius:var(--radius-xl);border:1px solid var(--gray-200);padding:var(--space-6);cursor:pointer;text-decoration:none;transition:border-color var(--duration-normal) var(--ease-standard),box-shadow var(--duration-normal) var(--ease-standard)" onmouseover="this.style.borderColor='var(--blue)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--gray-200)';this.style.boxShadow='none'">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:var(--space-3)"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:var(--space-1)">Warranty Policy</div>
+        <p style="font-size:13px;color:var(--gray-400);margin:0">Review coverage details, terms, and conditions.</p>
+        <span style="display:inline-block;margin-top:var(--space-3);font-size:13px;font-weight:600;color:var(--blue)">View Policy &rarr;</span>
+      </a>
+    </div>
+
+    <!-- Contact section -->
+    <div style="background:var(--white);border-radius:var(--radius-xl);border:1px solid var(--gray-200);padding:var(--space-6)">
+      <div style="font-weight:700;color:var(--navy);font-size:15px;margin-bottom:var(--space-3)">Need Help?</div>
+      <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+        <a href="tel:+15551234567" style="display:inline-flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--gray-600);text-decoration:none;transition:color var(--duration-fast)" onmouseover="this.style.color='var(--navy)'" onmouseout="this.style.color='var(--gray-600)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+          +1 (555) 123-4567
+        </a>
+        <a href="mailto:support@trailsupply.co" style="display:inline-flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--gray-600);text-decoration:none;transition:color var(--duration-fast)" onmouseover="this.style.color='var(--navy)'" onmouseout="this.style.color='var(--gray-600)'">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          support@trailsupply.co
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══ DRAWER ═══ -->
+<div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()">
+  <div class="drawer" onclick="event.stopPropagation()">
+    <div class="drawer-header">
+      <span class="drawer-title">Registration Detail</span>
+      <button class="drawer-close" onclick="closeDrawer()" aria-label="Close">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+    <div class="drawer-footer" id="drawer-footer">
+      <a class="btn btn-primary" onclick="closeDrawer();navigate('claim-select')">File a Claim</a>
+      <button class="btn btn-outline" onclick="closeDrawer()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer">
+  <div class="footer-powered">
+    Powered by
+    <svg width="16" height="16" viewBox="0 0 44 44">
+      <rect width="44" height="44" rx="8" fill="#4B92DB"/>
+      <line x1="8" y1="10" x2="22" y2="34" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <line x1="36" y1="10" x2="22" y2="34" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="22" cy="26" r="3.5" fill="#C8102E"/>
+    </svg>
+    warrantini
+  </div>
+</footer>
+
+<script>
+  // ═══ NAVIGATION ═══
+  const authPages = new Set(['landing', 'login-email', 'login-otp', 'warranty-policy']);
+  const regFlowPages = new Set(['reg-orders', 'reg-items', 'reg-confirm', 'reg-success']);
+  const claimFlowPages = new Set(['claim-select', 'claim-describe', 'claim-review', 'claim-success']);
+  const claimPages = new Set(['claims', 'claims-empty', 'claim-detail', ...claimFlowPages]);
+  let currentPage = 'landing';
+
+  function navigate(pageId) {
+    // Hide all pages
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    // Show target
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active');
+    currentPage = pageId;
+
+    // Update header nav visibility
+    const isAuth = !authPages.has(pageId);
+    document.querySelectorAll('.auth-only').forEach(el => {
+      el.style.display = isAuth ? '' : 'none';
+    });
+
+    // Update active nav link
+    document.getElementById('nav-registrations').classList.toggle('active',
+      pageId === 'registrations' || pageId === 'registrations-empty' || regFlowPages.has(pageId));
+    document.getElementById('nav-claims').classList.toggle('active', claimPages.has(pageId));
+    document.getElementById('nav-warranty-policy').classList.toggle('active', pageId === 'warranty-policy');
+
+    // Update body background
+    const isListPage = pageId === 'registrations' || pageId === 'registrations-empty'
+      || pageId === 'claims' || pageId === 'claims-empty' || pageId === 'claim-detail'
+      || pageId === 'warranty-policy';
+    document.body.style.background = isListPage ? 'var(--gray-50)' : 'var(--white)';
+
+    // Update step indicators for registration flow
+    if (regFlowPages.has(pageId)) {
+      const stepMap = { 'reg-orders': 1, 'reg-items': 2, 'reg-confirm': 3, 'reg-success': 4 };
+      const current = stepMap[pageId] || 1;
+      ['steps-orders', 'steps-items', 'steps-confirm'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) renderSteps(el, current);
+      });
+    }
+
+    // Update step indicators for claim flow
+    if (claimFlowPages.has(pageId)) {
+      const stepMap = { 'claim-select': 1, 'claim-describe': 2, 'claim-review': 3, 'claim-success': 4 };
+      const current = stepMap[pageId] || 1;
+      ['steps-claim-select', 'steps-claim-describe', 'steps-claim-review'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) renderClaimSteps(el, current);
+      });
+    }
+
+    // Claim flow: show/hide usage field and populate review
+    if (pageId === 'claim-describe') {
+      const pd = claimProductData[window.claimProduct];
+      const hasUsage = pd && pd.usageLimit !== null;
+      document.getElementById('claim-usage-section').style.display = hasUsage ? '' : 'none';
+      // Update the describe page header with selected product
+      const descHeader = document.querySelector('#page-claim-describe .card > div:first-of-type');
+      if (descHeader && pd) {
+        descHeader.querySelector('div > div:first-child').textContent = pd.name;
+        descHeader.querySelector('div > div:last-child').textContent = pd.regId + ' · Active until ' + pd.coverage.split(' — ')[1];
+      }
+    }
+    if (pageId === 'claim-review') {
+      const pd = claimProductData[window.claimProduct];
+      const hasUsage = pd && pd.usageLimit !== null;
+      // Populate product summary
+      if (pd) {
+        document.getElementById('review-product').textContent = pd.name;
+        document.getElementById('review-reg-id').textContent = pd.regId;
+        document.getElementById('review-coverage').textContent = pd.coverage;
+      }
+      // Usage block
+      const usageBlock = document.getElementById('review-usage-block');
+      const usageWarning = document.getElementById('claim-usage-warning');
+      if (hasUsage) {
+        const usageVal = parseInt(document.getElementById('claim-usage').value) || 0;
+        const overLimit = usageVal > pd.usageLimit;
+        usageBlock.style.display = '';
+        document.getElementById('review-current-usage').textContent = usageVal + ' ' + pd.usageUnit;
+        document.getElementById('review-coverage-limit').textContent = pd.usageLimit + ' ' + pd.usageUnit;
+        document.getElementById('review-usage-value').textContent = usageVal;
+        document.getElementById('review-usage-limit').textContent = pd.usageLimit;
+        document.getElementById('review-usage-status-row').style.display = overLimit ? '' : 'none';
+        usageWarning.style.display = overLimit ? 'flex' : 'none';
+      } else {
+        usageBlock.style.display = 'none';
+        usageWarning.style.display = 'none';
+      }
+      // Notes block
+      const notesVal = (document.getElementById('claim-notes').value || '').trim();
+      const notesBlock = document.getElementById('review-notes-block');
+      if (notesVal) {
+        notesBlock.style.display = '';
+        document.getElementById('review-notes-text').textContent = notesVal;
+      } else {
+        notesBlock.style.display = 'none';
+      }
+    }
+
+    // Re-trigger success animation
+    if (pageId === 'reg-success') {
+      const icon = document.getElementById('success-icon');
+      icon.classList.remove('animate');
+      void icon.offsetWidth;
+      icon.classList.add('animate');
+    }
+    if (pageId === 'claim-success') {
+      const icon = document.getElementById('claim-success-icon');
+      icon.classList.remove('animate');
+      void icon.offsetWidth;
+      icon.classList.add('animate');
+    }
+
+    // Update proto bar
+    document.querySelectorAll('.proto-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.page === pageId);
+    });
+
+    // Close drawer if open
+    closeDrawer();
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Proto bar click handlers
+  document.querySelectorAll('.proto-btn[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => navigate(btn.dataset.page));
+  });
+
+  // ═══ STEP INDICATOR ═══
+  const stepLabels = ['Order', 'Item', 'Confirm'];
+  const checkSvg = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  function renderSteps(container, currentStep) {
+    // currentStep: 1=order, 2=item, 3=confirm, 4=done(all complete)
+    let html = '';
+    for (let i = 1; i <= 3; i++) {
+      const state = currentStep > i ? 'completed' : (currentStep === i ? 'current' : 'future');
+      const labelClass = currentStep > i ? 'done' : (currentStep === i ? 'active' : '');
+      const content = state === 'completed' ? checkSvg : i;
+      html += `<div class="step-node"><div class="step-circle ${state}">${content}</div><span class="step-label ${labelClass}">${stepLabels[i-1]}</span></div>`;
+      if (i < 3) {
+        html += `<div class="step-line ${currentStep > i ? 'solid' : 'dashed'}"></div>`;
+      }
+    }
+    container.innerHTML = html;
+    container.style.display = currentStep >= 4 ? 'none' : 'flex';
+  }
+
+  // ═══ CARD SELECTION ═══
+  function toggleOrderItems(el) {
+    const list = el.nextElementSibling;
+    const isOpen = list.style.display !== 'none';
+    list.style.display = isOpen ? 'none' : '';
+    el.classList.toggle('expanded', !isOpen);
+    el.querySelector('span').textContent = isOpen ? 'View items' : 'Hide items';
+  }
+
+  function selectCard(el, nextPage) {
+    el.parentElement.querySelectorAll('.order-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    setTimeout(() => navigate(nextPage), 200);
+  }
+
+  function selectItem(el, coverageType) {
+    if (el.classList.contains('disabled') || el.classList.contains('excluded')) return;
+    el.parentElement.querySelectorAll('.item-card:not(.disabled):not(.excluded)').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+
+    // Populate confirm screen based on selected item
+    const isExpired = coverageType === 'expired';
+    const warningEl = document.getElementById('confirm-expired-warning');
+    const statusRow = document.getElementById('confirm-status-row');
+
+    if (isExpired) {
+      // Expired item: YETI Rambler
+      document.getElementById('confirm-product').textContent = 'YETI Rambler 26oz Bottle';
+      document.getElementById('confirm-sku').textContent = 'YET-RAM26-BLK';
+      document.getElementById('confirm-period').textContent = '3 months';
+      document.getElementById('confirm-starts').textContent = 'Oct 28, 2025';
+      document.getElementById('confirm-ends').textContent = 'Jan 28, 2026';
+      document.getElementById('confirm-resolution').textContent = 'Refund';
+      document.getElementById('confirm-return').textContent = 'No';
+      warningEl.style.display = 'flex';
+      statusRow.style.display = '';
+      document.getElementById('confirm-status').innerHTML = '<span class="badge badge-expired-coverage">Coverage Expired</span>';
+    } else if (coverageType === 'included-usage') {
+      // Usage-based item: Trek FX+ 1S
+      document.getElementById('confirm-product').textContent = 'Trek FX+ 1S';
+      document.getElementById('confirm-sku').textContent = 'TRK-FXP1S-BLK';
+      document.getElementById('confirm-period').textContent = '36 months or 500 miles';
+      document.getElementById('confirm-starts').textContent = 'Mar 14, 2026';
+      document.getElementById('confirm-ends').textContent = 'Mar 14, 2029';
+      document.getElementById('confirm-resolution').textContent = 'Repair';
+      document.getElementById('confirm-return').textContent = 'Yes — you\u2019ll need to return the item if filing a claim';
+      warningEl.style.display = 'none';
+      statusRow.style.display = 'none';
+    } else {
+      // Included item: Osprey Atmos
+      document.getElementById('confirm-product').textContent = 'Osprey Atmos AG 65';
+      document.getElementById('confirm-sku').textContent = 'OSP-ATM65-GRN';
+      document.getElementById('confirm-period').textContent = '24 months';
+      document.getElementById('confirm-starts').textContent = 'Mar 14, 2026';
+      document.getElementById('confirm-ends').textContent = 'Mar 14, 2028';
+      document.getElementById('confirm-resolution').textContent = 'Replace Part';
+      document.getElementById('confirm-return').textContent = 'Yes — you\u2019ll need to return the item if filing a claim';
+      warningEl.style.display = 'none';
+      statusRow.style.display = 'none';
+    }
+
+    setTimeout(() => navigate('reg-confirm'), 200);
+  }
+
+  // ═══ FILTER TABS ═══
+  function filterTab(el, status) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.reg-card').forEach(card => {
+      card.style.display = (status === 'all' || card.dataset.status === status) ? '' : 'none';
+    });
+  }
+
+  // ═══ DRAWER ═══
+  const drawerData = {
+    atmos: { product:'Osprey Atmos AG 65', id:'reg_8k2mx9', sku:'OSP-ATM65-GRN', category:'Backpacks', image:'images/backpack.jpg', order:'#5821', orderDate:'Feb 28, 2026', serial:'—', status:'Active', badgeClass:'badge-active', coverageStart:'Mar 14, 2026', coverageEnd:'Mar 14, 2028', coveragePct:'4%', coverageMonths:'24 months', usageLimit:'5,000 miles', resolutionType:'Replace Part', returnRequired:true, registered:'Mar 14, 2026', rule:'Premium Pack Warranty', covers:'Manufacturing defects in materials and workmanship', exclusions:'Normal wear and tear, misuse, improper storage', conditions:'Must be purchased from an authorized retailer' },
+    beta: { product:"Arc'teryx Beta AR Jacket", id:'reg_3j7fp1', sku:'ARC-BETA-BLK', category:'Outerwear', image:'images/jacket.jpg', order:'#5634', orderDate:'Jan 15, 2026', serial:'ARC-2026-0419', status:'Active', badgeClass:'badge-active', coverageStart:'Jan 15, 2026', coverageEnd:'Jan 15, 2029', coveragePct:'38%', coverageMonths:'36 months', usageLimit:null, resolutionType:'Replace Full', returnRequired:true, registered:'Jan 20, 2026', rule:'Outerwear — 36 months', covers:'Manufacturing defects', exclusions:'Normal wear and tear', conditions:null },
+    traeger: { product:'Traeger Pro 575 Pellet Grill', id:'reg_2n9vk5', sku:'TRG-P575-BRZ', category:'Grills', image:'images/grill.jpg', order:'#5102', orderDate:'Nov 3, 2025', serial:'TRG-575-88421', status:'Active', badgeClass:'badge-active', coverageStart:'Nov 10, 2024', coverageEnd:'Nov 10, 2026', coveragePct:'82%', coverageMonths:'24 months', usageLimit:null, resolutionType:'Repair', returnRequired:true, registered:'Nov 10, 2024', rule:'Grill Extended Coverage', covers:'Mechanical and electrical failures', exclusions:'Cosmetic damage, rust from outdoor exposure', conditions:null }
+  };
+
+  function openDrawer(key) {
+    const d = drawerData[key];
+    if (!d) return;
+    const pct = parseInt(d.coveragePct);
+    const barColor = pct > 75 ? 'var(--color-warning-text)' : 'var(--color-success-text)';
+    document.getElementById('drawer-body').innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
+        <div style="display:flex;align-items:center;gap:var(--space-3)">
+          ${d.image ? `<img src="${d.image}" alt="${d.product}" style="width:56px;height:56px;border-radius:var(--radius-md);object-fit:cover;flex-shrink:0;cursor:pointer" title="Click to enlarge">` : `<div style="width:56px;height:56px;border-radius:var(--radius-md);background:var(--gray-100);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gray-400)" stroke-width="1.5" stroke-linecap="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>`}
+          <div>
+            <div style="font-family:var(--font-mono);font-size:12px;color:var(--gray-400);margin-bottom:2px">${d.id}</div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:18px;letter-spacing:-0.01em">${d.product}</div>
+          </div>
+        </div>
+        <span class="badge ${d.badgeClass}">${d.status}</span>
+      </div>
+      <div class="detail-coverage">
+        <div class="detail-coverage-header">
+          <span class="detail-coverage-label">Coverage remaining</span>
+          <span class="detail-coverage-pct" style="color:${barColor}">${100-pct}%</span>
+        </div>
+        <div class="detail-coverage-bar"><div class="detail-coverage-fill" style="width:${d.coveragePct};background:${barColor};opacity:0.5"></div></div>
+        <div class="detail-coverage-dates"><span>${d.coverageStart}</span><span>${d.coverageEnd}</span></div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Product</div>
+        <div class="detail-rows">
+          <div class="detail-row"><span class="detail-label">Product</span><span class="detail-value">${d.product}</span></div>
+          <div class="detail-row"><span class="detail-label">SKU</span><span class="detail-value mono">${d.sku}</span></div>
+          <div class="detail-row"><span class="detail-label">Category</span><span class="detail-value">${d.category}</span></div>
+          <div class="detail-row"><span class="detail-label">Serial number</span><span class="detail-value mono">${d.serial}</span></div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">Coverage</div>
+        <div class="detail-rows">
+          <div class="detail-row"><span class="detail-label">Coverage period</span><span class="detail-value">${d.coverageMonths}</span></div>
+          ${d.usageLimit ? `<div class="detail-row"><span class="detail-label">Usage limit</span><span class="detail-value">${d.usageLimit}</span></div>` : ''}
+          <div class="detail-row"><span class="detail-label">Resolution type</span><span class="detail-value">${d.resolutionType || 'Replace Part'}</span></div>
+          <div class="detail-row"><span class="detail-label">Return required</span><span class="detail-value">${d.returnRequired ? 'Yes' : 'No'}</span></div>
+          <div class="detail-row"><span class="detail-label">Warranty rule</span><span class="detail-value">${d.rule}</span></div>
+          <div class="detail-row"><span class="detail-label">Registered on</span><span class="detail-value">${d.registered}</span></div>
+        </div>
+      </div>
+      ${d.covers ? `<div class="detail-section">
+        <div class="detail-section-title">Coverage Terms</div>
+        <div class="detail-rows">
+          ${d.covers ? `<div class="detail-row"><span class="detail-label">What's covered</span><span class="detail-value">${d.covers}</span></div>` : ''}
+          ${d.exclusions ? `<div class="detail-row"><span class="detail-label">Exclusions</span><span class="detail-value">${d.exclusions}</span></div>` : ''}
+          ${d.conditions ? `<div class="detail-row"><span class="detail-label">Conditions</span><span class="detail-value">${d.conditions}</span></div>` : ''}
+        </div>
+      </div>` : ''}
+      <div class="detail-section">
+        <div class="detail-section-title">Order</div>
+        <div class="detail-rows">
+          <div class="detail-row"><span class="detail-label">Order number</span><span class="detail-value mono">${d.order}</span></div>
+          <div class="detail-row"><span class="detail-label">Order date</span><span class="detail-value">${d.orderDate}</span></div>
+        </div>
+      </div>`;
+    document.getElementById('drawer-backdrop').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawer-backdrop').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+  // ═══ CLAIM STEP INDICATOR ═══
+  const claimStepLabels = ['Registration', 'Describe', 'Review'];
+
+  function renderClaimSteps(container, currentStep) {
+    let html = '';
+    for (let i = 1; i <= 3; i++) {
+      const state = currentStep > i ? 'completed' : (currentStep === i ? 'current' : 'future');
+      const labelClass = currentStep > i ? 'done' : (currentStep === i ? 'active' : '');
+      const content = state === 'completed' ? checkSvg : i;
+      html += `<div class="step-node"><div class="step-circle ${state}">${content}</div><span class="step-label ${labelClass}">${claimStepLabels[i-1]}</span></div>`;
+      if (i < 3) {
+        html += `<div class="step-line ${currentStep > i ? 'solid' : 'dashed'}"></div>`;
+      }
+    }
+    container.innerHTML = html;
+    container.style.display = currentStep >= 4 ? 'none' : 'flex';
+  }
+
+  // ═══ CLAIM INTERACTIONS ═══
+  window.claimProduct = 'atmos';
+
+  const claimProductData = {
+    atmos:   { name: 'Osprey Atmos AG 65',     regId: 'reg_8k2mx9', coverage: 'Mar 14, 2026 — Mar 14, 2028', usageLimit: null },
+    beta:    { name: "Arc'teryx Beta AR Jacket", regId: 'reg_3j7fp1', coverage: 'Jan 15, 2026 — Jan 15, 2029', usageLimit: null },
+    traeger: { name: 'Traeger Pro 575 Pellet Grill', regId: 'reg_2n9vk5', coverage: 'Nov 10, 2024 — Nov 10, 2026', usageLimit: null },
+    trek:    { name: 'Trek FX+ 1S',             regId: 'reg_9p2ek7', coverage: 'Mar 14, 2026 — Mar 14, 2029', usageLimit: 500, usageUnit: 'miles' },
+  };
+
+  function selectClaimReg(el, productKey) {
+    if (el.classList.contains('disabled')) return;
+    document.querySelectorAll('.claim-reg-card:not(.disabled)').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    window.claimProduct = productKey || 'atmos';
+    setTimeout(() => navigate('claim-describe'), 200);
+  }
+
+  function filterClaimTab(el, status) {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.claim-card').forEach(card => {
+      card.style.display = (status === 'all' || card.dataset.claimStatus === status) ? '' : 'none';
+    });
+  }
+
+  function simulateUpload() {
+    // In a real app, this opens a file picker. For the prototype, it's a no-op.
+  }
+
+  function submitClaimReply() {
+    // Simulate reply submission
+    const btn = event.target;
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Sent!';
+      btn.style.background = '#065F46';
+      setTimeout(() => {
+        btn.textContent = 'Send Reply';
+        btn.disabled = false;
+        btn.style.background = '';
+      }, 1500);
+    }, 800);
+  }
+
+  // ═══ OTP AUTO-ADVANCE ═══
+  document.querySelectorAll('.otp-box').forEach((box, idx, boxes) => {
+    box.addEventListener('input', () => { if (box.value && idx < boxes.length - 1) boxes[idx+1].focus(); });
+    box.addEventListener('keydown', e => { if (e.key === 'Backspace' && !box.value && idx > 0) boxes[idx-1].focus(); });
+  });
+
+  // ═══ INIT ═══
+  // Hide auth-only nav on load (starts on login)
+  document.querySelectorAll('.auth-only').forEach(el => el.style.display = 'none');
+</script>
+</body>
+</html>

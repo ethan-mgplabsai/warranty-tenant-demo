@@ -1,65 +1,93 @@
-import Image from "next/image";
+import { Mail, PackageCheck, Phone, ShieldCheck } from "lucide-react";
+import Link from "next/link";
+
+import { Card, CardContent } from "@/components/ui/card";
+
+const actions = [
+  {
+    href: "/registrations",
+    icon: PackageCheck,
+    title: "Register a Product",
+    description: "Activate your warranty coverage by registering your purchase.",
+    cta: "Get Started",
+  },
+  {
+    href: "/warranty-policy",
+    icon: ShieldCheck,
+    title: "Warranty Policy",
+    description: "Review coverage details, terms, and conditions.",
+    cta: "View Policy",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="flex flex-1 flex-col bg-background">
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-10">
+        {/* Hero */}
+        <div className="relative h-56 w-full overflow-hidden rounded-xl bg-gradient-to-br from-secondary via-muted to-secondary sm:h-72">
+          <div
+            className="absolute inset-0 grid grid-cols-8 gap-2 p-6 opacity-40"
+            aria-hidden="true"
+          >
+            {Array.from({ length: 8 }).map((_, i) => (
+              <span key={i} className="rounded-full bg-primary/60" />
+            ))}
+          </div>
+        </div>
+
+        {/* Welcome headline + copy */}
+        <div className="text-center">
+          <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            Welcome to the Pergola Cave Warranty Center
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Register your pergola and file warranty claims quickly and easily. We
+            stand behind every product we sell.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* Action cards */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {actions.map(({ href, icon: Icon, title, description, cta }) => (
+            <Link key={href} href={href}>
+              <Card className="h-full transition-shadow hover:shadow-md">
+                <CardContent className="flex h-full flex-col">
+                  <Icon className="mb-3 size-8 text-primary" strokeWidth={2} />
+                  <div className="font-semibold text-foreground">{title}</div>
+                  <p className="mt-1 flex-1 text-[13px] text-muted-foreground">
+                    {description}
+                  </p>
+                  <span className="mt-3 text-[13px] font-semibold text-primary">
+                    {cta} &rarr;
+                  </span>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
-      </main>
+
+        {/* Contact */}
+        <Card>
+          <CardContent className="flex flex-col gap-2">
+            <div className="font-semibold text-foreground">Need Help?</div>
+            <a
+              href="tel:+15551234567"
+              className="inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Phone className="size-4 text-muted-foreground" strokeWidth={2} />
+              +1 (555) 123-4567
+            </a>
+            <a
+              href="mailto:support@pergolacave.com"
+              className="inline-flex items-center gap-2 text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <Mail className="size-4 text-muted-foreground" strokeWidth={2} />
+              support@pergolacave.com
+            </a>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

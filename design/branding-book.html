@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#302821" />
+<title>Pergola Cave — Brand Book</title>
+<meta name="description" content="The visual identity system for Pergola Cave: colors, typography, logo, components, and voice." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --pc-ink: #302821;
+    --pc-taupe: #63574b;
+    --pc-orange: #ff7729;
+    --pc-white: #ffffff;
+    --pc-cream: #fdfdfb;
+    --pc-sand: #f1eadf;
+    --pc-beige: #efeae1;
+    --pc-linen: #fbf8f4;
+    --pc-border: #e7dfd3;
+    --radius: 12px;
+    --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--font-sans);
+    background: var(--pc-cream);
+    color: var(--pc-ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: inherit; text-decoration: none; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- Nav ---------- */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(253, 253, 251, 0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--pc-border);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    gap: 24px;
+  }
+  .nav-links { display: none; gap: 28px; }
+  .nav-links a {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--pc-taupe);
+    transition: color 0.15s;
+  }
+  .nav-links a:hover { color: var(--pc-orange); }
+  @media (min-width: 860px) { .nav-links { display: flex; } }
+
+  /* ---------- Logo ---------- */
+  .logo { display: inline-flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    display: grid;
+    gap: 3px;
+    width: 34px;
+    height: 34px;
+    padding: 6px;
+    border-radius: 8px;
+    background: var(--pc-ink);
+  }
+  .logo-mark span { display: block; height: 2.5px; border-radius: 2px; background: var(--pc-orange); }
+  .logo-mark span:nth-child(even) { background: rgba(255, 119, 41, 0.55); }
+  .logo-word {
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .logo-word b { color: var(--pc-orange); font-weight: 800; }
+
+  /* ---------- Announcement marquee ---------- */
+  .marquee {
+    background: var(--pc-ink);
+    color: var(--pc-white);
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .marquee-track {
+    display: inline-flex;
+    gap: 48px;
+    padding: 9px 0;
+    animation: scroll 22s linear infinite;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .marquee-track span { color: rgba(255, 255, 255, 0.85); }
+  .marquee-track b { color: var(--pc-orange); }
+  @keyframes scroll {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ---------- Hero ---------- */
+  .hero { padding: 88px 0 72px; border-bottom: 1px solid var(--pc-border); }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pc-orange);
+    margin-bottom: 20px;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 2px;
+    background: var(--pc-orange);
+  }
+  .hero h1 {
+    font-size: clamp(44px, 8vw, 88px);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+    margin-bottom: 24px;
+  }
+  .hero h1 em { color: var(--pc-orange); font-style: normal; }
+  .hero p {
+    max-width: 560px;
+    font-size: 18px;
+    color: var(--pc-taupe);
+    text-wrap: pretty;
+  }
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--pc-border);
+  }
+  .hero-meta div span {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pc-taupe);
+    margin-bottom: 6px;
+  }
+  .hero-meta div strong { font-size: 16px; font-weight: 700; }
+
+  /* ---------- Section ---------- */
+  section { padding: 80px 0; border-bottom: 1px solid var(--pc-border); }
+  .sec-head { margin-bottom: 44px; }
+  .sec-num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    color: var(--pc-orange);
+  }
+  .sec-head h2 {
+    font-size: clamp(30px, 4.5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 8px 0 12px;
+  }
+  .sec-head p { max-width: 620px; color: var(--pc-taupe); font-size: 16px; }
+
+  /* ---------- Color ---------- */
+  .swatch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .swatch {
+    border: 1px solid var(--pc-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--pc-white);
+  }
+  .swatch-color { height: 128px; }
+  .swatch-body { padding: 16px; }
+  .swatch-body h4 { font-size: 15px; font-weight: 700; }
+  .swatch-body .hex {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--pc-taupe);
+    margin: 4px 0 2px;
+    text-transform: uppercase;
+  }
+  .swatch-body .rgb { font-family: var(--font-mono); font-size: 11px; color: var(--pc-taupe); }
+  .swatch-body .role {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--pc-taupe);
+  }
+  .ratio {
+    display: flex;
+    height: 56px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 32px;
+    border: 1px solid var(--pc-border);
+  }
+  .ratio div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---------- Typography ---------- */
+  .type-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 20px;
+    padding: 22px 0;
+    border-top: 1px solid var(--pc-border);
+  }
+  .type-row:first-child { border-top: none; }
+  .type-meta {
+    flex: 0 0 130px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pc-taupe);
+  }
+  .type-sample { letter-spacing: -0.02em; }
+  .type-cards { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 32px; }
+  @media (min-width: 720px) { .type-cards { grid-template-columns: 1fr 1fr; } }
+  .type-card {
+    border: 1px solid var(--pc-border);
+    border-radius: var(--radius);
+    padding: 24px;
+    background: var(--pc-white);
+  }
+  .type-card .big { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
+  .type-card .big.mono { font-family: var(--font-mono); font-weight: 600; }
+  .type-card h4 { font-size: 14px; margin: 14px 0 4px; }
+  .type-card p { font-size: 13px; color: var(--pc-taupe); font-family: var(--font-mono); }
+
+  /* ---------- Logo section ---------- */
+  .logo-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .logo-tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    border-radius: var(--radius);
+    border: 1px solid var(--pc-border);
+  }
+  .logo-tile.dark { background: var(--pc-ink); }
+  .logo-tile.orange { background: var(--pc-orange); }
+  .logo-tile.light { background: var(--pc-sand); }
+  .rules { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 24px; }
+  @media (min-width: 720px) { .rules { grid-template-columns: 1fr 1fr; } }
+  .rule {
+    border-radius: var(--radius);
+    padding: 20px;
+    font-size: 14px;
+  }
+  .rule.do { background: rgba(255, 119, 41, 0.08); border: 1px solid rgba(255, 119, 41, 0.3); }
+  .rule.dont { background: var(--pc-beige); border: 1px solid var(--pc-border); }
+  .rule h4 { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px; }
+  .rule.do h4 { color: var(--pc-orange); }
+  .rule ul { list-style: none; display: grid; gap: 8px; }
+  .rule li { color: var(--pc-taupe); padding-left: 18px; position: relative; }
+  .rule li::before { content: "—"; position: absolute; left: 0; color: var(--pc-orange); }
+
+  /* ---------- Components ---------- */
+  .comp-grid { display: grid; gap: 20px; grid-template-columns: 1fr; }
+  @media (min-width: 720px) { .comp-grid { grid-template-columns: 1fr 1fr; } }
+  .card {
+    border: 1px solid var(--pc-border);
+    border-radius: var(--radius);
+    background: var(--pc-white);
+    padding: 24px;
+  }
+  .card > .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--pc-taupe);
+    margin-bottom: 18px;
+    display: block;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.12s, background 0.15s;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--pc-orange); color: #fff; }
+  .btn-primary:hover { background: #e8631a; }
+  .btn-dark { background: var(--pc-ink); color: #fff; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--pc-ink); color: var(--pc-ink); }
+  .btn-ghost { background: var(--pc-beige); color: var(--pc-ink); }
+  .row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .badge-sale { background: var(--pc-orange); color: #fff; }
+  .badge-stock { background: rgba(48, 40, 33, 0.06); color: var(--pc-ink); }
+  .badge-new { background: var(--pc-ink); color: #fff; }
+  .field {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1.5px solid var(--pc-border);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    background: var(--pc-cream);
+    color: var(--pc-ink);
+  }
+  .field:focus { outline: none; border-color: var(--pc-orange); }
+  .field::placeholder { color: #a99f92; }
+
+  /* product card */
+  .product { padding: 0; overflow: hidden; }
+  .product-img {
+    height: 180px;
+    background: linear-gradient(135deg, #f1eadf, #e7dfd3);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 14px;
+  }
+  .product-body { padding: 18px 20px 22px; }
+  .product-body h4 { font-size: 17px; font-weight: 700; }
+  .product-body .sub { font-size: 13px; color: var(--pc-taupe); margin: 3px 0 14px; }
+  .price { display: flex; align-items: baseline; gap: 10px; }
+  .price .now { font-family: var(--font-mono); font-size: 22px; font-weight: 600; color: var(--pc-ink); }
+  .price .was { font-family: var(--font-mono); font-size: 14px; color: var(--pc-taupe); text-decoration: line-through; }
+
+  /* ---------- Voice ---------- */
+  .voice-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .voice-card { border: 1px solid var(--pc-border); border-radius: var(--radius); padding: 24px; background: var(--pc-white); }
+  .voice-card h4 { font-size: 16px; margin-bottom: 8px; }
+  .voice-card h4 span { color: var(--pc-orange); }
+  .voice-card p { font-size: 14px; color: var(--pc-taupe); }
+  .voice-examples { display: grid; gap: 16px; grid-template-columns: 1fr; margin-top: 24px; }
+  @media (min-width: 720px) { .voice-examples { grid-template-columns: 1fr 1fr; } }
+
+  /* ---------- Footer ---------- */
+  footer { padding: 56px 0; background: var(--pc-ink); color: rgba(255, 255, 255, 0.7); }
+  footer .logo-word { color: #fff; }
+  footer .foot-inner { display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between; align-items: center; }
+  footer p { font-size: 13px; }
+  footer .mono { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em; }
+</style>
+</head>
+<body>
+
+  <!-- Announcement marquee -->
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <span><b>FREE SHIPPING</b> ON ALL PERGOLAS</span>
+      <span>BUILT FOR <b>LA SUN</b></span>
+      <span><b>READY TO SHIP</b> — IN STOCK NOW</span>
+      <span>ALUMINUM LOUVERED ROOF SYSTEMS</span>
+      <span><b>FREE SHIPPING</b> ON ALL PERGOLAS</span>
+      <span>BUILT FOR <b>LA SUN</b></span>
+      <span><b>READY TO SHIP</b> — IN STOCK NOW</span>
+      <span>ALUMINUM LOUVERED ROOF SYSTEMS</span>
+    </div>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <div class="wrap nav-inner">
+      <a class="logo" href="#top" aria-label="Pergola Cave home">
+        <span class="logo-mark" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        <span class="logo-word">PERGOLA<b>CAVE</b></span>
+      </a>
+      <div class="nav-links">
+        <a href="#color">Color</a>
+        <a href="#type">Typography</a>
+        <a href="#logo">Logo</a>
+        <a href="#components">Components</a>
+        <a href="#voice">Voice</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero" id="top">
+    <div class="wrap">
+      <span class="eyebrow">Brand Book · v1.0</span>
+      <h1>The Pergola&nbsp;Cave<br /><em>identity system.</em></h1>
+      <p>Everything that makes Pergola Cave recognizable — the sun-baked palette, confident typography, louvered logo mark, and the components that build a modern outdoor-living storefront.</p>
+      <div class="hero-meta">
+        <div><span>Category</span><strong>Outdoor Living</strong></div>
+        <div><span>Primary</span><strong>Cave Orange</strong></div>
+        <div><span>Typeface</span><strong>Inter</strong></div>
+        <div><span>Tone</span><strong>Direct · Warm</strong></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Color -->
+  <section id="color">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">01 — Color</span>
+        <h2>A sun-baked palette</h2>
+        <p>Warm neutrals ground the brand while a single high-energy orange drives every call to action. Use color intentionally: lots of cream and espresso, a controlled hit of orange.</p>
+      </div>
+      <div class="swatch-grid">
+        <div class="swatch">
+          <div class="swatch-color" style="background:#ff7729"></div>
+          <div class="swatch-body"><h4>Cave Orange</h4><div class="hex">#FF7729</div><div class="rgb">rgb(255, 119, 41)</div><span class="role">Accent · CTAs</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#302821"></div>
+          <div class="swatch-body"><h4>Espresso Ink</h4><div class="hex">#302821</div><div class="rgb">rgb(48, 40, 33)</div><span class="role">Primary text</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#63574b"></div>
+          <div class="swatch-body"><h4>Warm Taupe</h4><div class="hex">#63574B</div><div class="rgb">rgb(99, 87, 75)</div><span class="role">Secondary text</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#f1eadf"></div>
+          <div class="swatch-body"><h4>Sand</h4><div class="hex">#F1EADF</div><div class="rgb">rgb(241, 234, 223)</div><span class="role">Muted surface</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#efeae1"></div>
+          <div class="swatch-body"><h4>Beige</h4><div class="hex">#EFEAE1</div><div class="rgb">rgb(239, 234, 225)</div><span class="role">Secondary surface</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#fbf8f4"></div>
+          <div class="swatch-body"><h4>Linen</h4><div class="hex">#FBF8F4</div><div class="rgb">rgb(251, 248, 244)</div><span class="role">Section tint</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#fdfdfb;border-bottom:1px solid #e7dfd3"></div>
+          <div class="swatch-body"><h4>Cream</h4><div class="hex">#FDFDFB</div><div class="rgb">rgb(253, 253, 251)</div><span class="role">Background</span></div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-color" style="background:#ffffff;border-bottom:1px solid #e7dfd3"></div>
+          <div class="swatch-body"><h4>White</h4><div class="hex">#FFFFFF</div><div class="rgb">rgb(255, 255, 255)</div><span class="role">Cards</span></div>
+        </div>
+      </div>
+      <div class="ratio" aria-label="Recommended color usage ratio">
+        <div style="flex:60;background:#fdfdfb;color:#302821">60% Neutral</div>
+        <div style="flex:30;background:#302821;color:#fff">30% Ink</div>
+        <div style="flex:10;background:#ff7729;color:#fff">10% Orange</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Typography -->
+  <section id="type">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">02 — Typography</span>
+        <h2>Confident &amp; legible</h2>
+        <p>Inter carries the entire system with tight tracking on large headings, while a monospace face handles prices, specs, and technical labels for a product-forward feel.</p>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">Display · 800</div>
+        <div class="type-sample" style="font-size:56px;font-weight:800">Ready to Ship</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">H1 · 700</div>
+        <div class="type-sample" style="font-size:40px;font-weight:700">Built for LA Sun</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">H2 · 700</div>
+        <div class="type-sample" style="font-size:30px;font-weight:700">Aluminum Louvered Roofs</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">Body · 400</div>
+        <div class="type-sample" style="font-size:18px;color:var(--pc-taupe)">Motorized louvers open, close, and tilt to control light, airflow, and shade.</div>
+      </div>
+      <div class="type-row">
+        <div class="type-meta">Mono · 500</div>
+        <div class="type-sample" style="font-family:var(--font-mono);font-size:16px;letter-spacing:0.04em">$3,499.00 · SKU PC-1014</div>
+      </div>
+      <div class="type-cards">
+        <div class="type-card">
+          <div class="big">Aa</div>
+          <h4>Inter</h4>
+          <p>Primary · 400 / 500 / 600 / 700 / 800</p>
+        </div>
+        <div class="type-card">
+          <div class="big mono">Aa</div>
+          <h4>JetBrains Mono</h4>
+          <p>Prices &amp; specs · 400 / 500 / 600</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Logo -->
+  <section id="logo">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">03 — Logo</span>
+        <h2>The louvered mark</h2>
+        <p>Stacked blades echo the product's adjustable roof. Pair the mark with the uppercase wordmark, and give it room to breathe.</p>
+      </div>
+      <div class="logo-grid">
+        <div class="logo-tile light">
+          <span class="logo"><span class="logo-mark"><span></span><span></span><span></span><span></span></span><span class="logo-word">PERGOLA<b>CAVE</b></span></span>
+        </div>
+        <div class="logo-tile dark">
+          <span class="logo"><span class="logo-mark" style="background:#ff7729"><span style="background:#fff"></span><span style="background:rgba(255,255,255,.55)"></span><span style="background:#fff"></span><span style="background:rgba(255,255,255,.55)"></span></span><span class="logo-word" style="color:#fff">PERGOLA<b style="color:#ff7729">CAVE</b></span></span>
+        </div>
+        <div class="logo-tile orange">
+          <span class="logo"><span class="logo-mark" style="background:#302821"><span style="background:#fff"></span><span style="background:rgba(255,255,255,.55)"></span><span style="background:#fff"></span><span style="background:rgba(255,255,255,.55)"></span></span><span class="logo-word" style="color:#fff">PERGOLA<b style="color:#302821">CAVE</b></span></span>
+        </div>
+      </div>
+      <div class="rules">
+        <div class="rule do">
+          <h4>Do</h4>
+          <ul>
+            <li>Keep clear space equal to the mark's height on all sides.</li>
+            <li>Use the espresso mark on light surfaces, orange or white on dark.</li>
+            <li>Maintain the uppercase, tightly-tracked wordmark.</li>
+          </ul>
+        </div>
+        <div class="rule dont">
+          <h4>Don't</h4>
+          <ul>
+            <li>Stretch, rotate, or recolor the blades arbitrarily.</li>
+            <li>Place the mark on a busy photo without a scrim.</li>
+            <li>Mix the wordmark with any other typeface.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Components -->
+  <section id="components">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">04 — Components</span>
+        <h2>Building blocks</h2>
+        <p>Pill buttons, status badges, form fields, and product cards — the storefront's core UI, styled to the brand.</p>
+      </div>
+      <div class="comp-grid">
+        <div class="card">
+          <span class="label">Buttons</span>
+          <div class="row">
+            <button class="btn btn-primary">Shop Pergolas</button>
+            <button class="btn btn-dark">Add to Cart</button>
+            <button class="btn btn-outline">Learn More</button>
+            <button class="btn btn-ghost">View Specs</button>
+          </div>
+        </div>
+        <div class="card">
+          <span class="label">Badges</span>
+          <div class="row">
+            <span class="badge badge-sale">SALE</span>
+            <span class="badge badge-new">NEW</span>
+            <span class="badge badge-stock">In Stock</span>
+            <span class="badge badge-stock">Free Shipping</span>
+          </div>
+        </div>
+        <div class="card">
+          <span class="label">Form fields</span>
+          <div class="row" style="flex-direction:column;align-items:stretch;gap:12px">
+            <input class="field" type="email" placeholder="you@email.com" aria-label="Email" />
+            <button class="btn btn-primary" style="justify-content:center">Notify Me</button>
+          </div>
+        </div>
+        <div class="card product">
+          <div class="product-img">
+            <span class="badge badge-sale">SALE</span>
+            <span class="badge badge-stock">Ready to Ship</span>
+          </div>
+          <div class="product-body">
+            <h4>Louvered Pergola 10×14</h4>
+            <p class="sub">Motorized aluminum roof</p>
+            <div class="price">
+              <span class="now">$3,499</span>
+              <span class="was">$4,299</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Voice -->
+  <section id="voice">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="sec-num">05 — Voice &amp; Tone</span>
+        <h2>How we sound</h2>
+        <p>Direct, warm, and proof-driven. We talk like a knowledgeable installer — confident about the product, never hyped or salesy.</p>
+      </div>
+      <div class="voice-grid">
+        <div class="voice-card"><h4>Direct<span>.</span></h4><p>Say it plainly. Lead with the benefit, skip the fluff.</p></div>
+        <div class="voice-card"><h4>Warm<span>.</span></h4><p>Friendly and human. We're helping neighbors upgrade their backyard.</p></div>
+        <div class="voice-card"><h4>Proof-driven<span>.</span></h4><p>Back claims with specs, materials, and real numbers.</p></div>
+      </div>
+      <div class="voice-examples">
+        <div class="rule do">
+          <h4>Do write</h4>
+          <ul>
+            <li>"Built from powder-coated aluminum. Rated for LA sun and rain."</li>
+            <li>"In stock and ready to ship — free delivery."</li>
+          </ul>
+        </div>
+        <div class="rule dont">
+          <h4>Don't write</h4>
+          <ul>
+            <li>"The most AMAZING pergola you'll EVER own!!!"</li>
+            <li>"Limited time mega-blowout — act now or miss out forever."</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrap foot-inner">
+      <span class="logo"><span class="logo-mark" style="background:#ff7729"><span style="background:#fff"></span><span style="background:rgba(255,255,255,.55)"></span><span style="background:#fff"></span><span style="background:rgba(255,255,255,.55)"></span></span><span class="logo-word">PERGOLA<b style="color:#ff7729">CAVE</b></span></span>
+      <p class="mono">BRAND BOOK · v1.0</p>
+      <p>Identity system extracted from pergolacave.com</p>
+    </div>
+  </footer>
+
+</body>
+</html>
