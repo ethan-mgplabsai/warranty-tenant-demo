@@ -30,6 +30,16 @@ const otpSendEmailLimiter = redis
 const registrationsReadLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 m"), prefix: "rl:regs-read" })
   : null;
+const ordersReadLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 m"), prefix: "rl:orders-read" })
+  : null;
+
+// This is the first *write* endpoint against the shared demo tenant's API key —
+// tighter than the read limiters since every visitor to the site shares the same
+// upstream budget.
+const registrationsWriteLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 m"), prefix: "rl:regs-write" })
+  : null;
 
 export function getClientIp(request: NextRequest): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
@@ -59,6 +69,26 @@ export async function checkRegistrationsReadRateLimit(ip: string): Promise<RateL
   if (!registrationsReadLimiter) return { success: true };
 
   const result = await registrationsReadLimiter.limit(ip);
+  if (!result.success) {
+    return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
+  }
+  return { success: true };
+}
+
+export async function checkOrdersReadRateLimit(ip: string): Promise<RateLimitResult> {
+  if (!ordersReadLimiter) return { success: true };
+
+  const result = await ordersReadLimiter.limit(ip);
+  if (!result.success) {
+    return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
+  }
+  return { success: true };
+}
+
+export async function checkRegistrationsWriteRateLimit(ip: string): Promise<RateLimitResult> {
+  if (!registrationsWriteLimiter) return { success: true };
+
+  const result = await registrationsWriteLimiter.limit(ip);
   if (!result.success) {
     return { success: false, retryAfterMs: Math.max(0, result.reset - Date.now()) };
   }

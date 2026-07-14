@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { CUSTOMER_SESSION_COOKIE } from "@/lib/customer-session";
-import { checkRegistrationsReadRateLimit, getClientIp } from "@/lib/rate-limit";
+import {
+  checkRegistrationsReadRateLimit,
+  checkRegistrationsWriteRateLimit,
+  getClientIp,
+} from "@/lib/rate-limit";
 import { callWarrantini } from "@/lib/warrantini-client";
 
 export type CustomerRegistration = {
@@ -52,6 +56,43 @@ export async function GET(request: NextRequest) {
   const { status, data, narration } = await callWarrantini<ListResponseBody>({
     method: "GET",
     path: `/api/v1/customer/registrations?page=${page}&pageSize=${pageSize}`,
+    customerToken: token,
+  });
+
+  if (status === 401) {
+    return NextResponse.json({ gate: "otp", narration }, { status: 401 });
+  }
+
+  return NextResponse.json({ ...data, narration }, { status });
+}
+
+type CreateRegistrationRequestBody = {
+  orderId: string;
+  lineItemId: string;
+  serialNumber?: string;
+};
+
+export async function POST(request: NextRequest) {
+  const token = request.cookies.get(CUSTOMER_SESSION_COOKIE)?.value;
+  if (!token) {
+    return NextResponse.json({ gate: "otp" }, { status: 401 });
+  }
+
+  const ip = getClientIp(request);
+  const rateLimit = await checkRegistrationsWriteRateLimit(ip);
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      { error: "rate_limited", message: "Too many requests.", retryAfterMs: rateLimit.retryAfterMs },
+      { status: 429 }
+    );
+  }
+
+  const body = (await request.json()) as CreateRegistrationRequestBody;
+
+  const { status, data, narration } = await callWarrantini<CustomerRegistration>({
+    method: "POST",
+    path: "/api/v1/customer/registrations",
+    body,
     customerToken: token,
   });
 
