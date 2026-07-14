@@ -55,6 +55,17 @@ const warrantyPolicyReadLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 m"), prefix: "rl:policy-read" })
   : null;
 
+// Reads behind a JWT — same risk profile as registrations/orders reads.
+const claimsReadLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(30, "1 m"), prefix: "rl:claims-read" })
+  : null;
+
+// Replying to an info request is a write against the shared demo tenant —
+// tighter, same rationale as registrations-write.
+const claimsReplyLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 m"), prefix: "rl:claims-reply" })
+  : null;
+
 export function getClientIp(request: NextRequest): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
   return forwardedFor?.split(",")[0]?.trim() ?? "127.0.0.1";
@@ -112,4 +123,12 @@ export function checkRulesReadRateLimit(ip: string): Promise<RateLimitResult> {
 
 export function checkWarrantyPolicyReadRateLimit(ip: string): Promise<RateLimitResult> {
   return checkRateLimit(warrantyPolicyReadLimiter, ip);
+}
+
+export function checkClaimsReadRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(claimsReadLimiter, ip);
+}
+
+export function checkClaimsReplyRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(claimsReplyLimiter, ip);
 }

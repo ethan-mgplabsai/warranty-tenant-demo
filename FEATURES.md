@@ -55,20 +55,22 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
   fails open on any Redis-side error, not just "not configured" — matching the fail-open philosophy already stated
   in that file's own comments. Worth fixing at the token level too if real rate limiting is wanted in production.
 
-## Up next
+- **Claims list + detail** — `app/claims/page.tsx` + `app/claims/[id]/page.tsx` +
+  `components/claims/{claims-view,claim-card,empty-state,claim-detail-view,claim-timeline,claim-reply-form}.tsx`.
+  Confirmed against the live spec: went with the customer tier (`GET/POST /api/v1/customer/claims`,
+  `GET .../claims/{id}`, `POST .../claims/{id}/reply`) as this doc predicted, same reasons as every prior feature.
+  Real status enum turned out richer than the prototype's 3 states (`submitted`, `in_review`, `approved`,
+  `rejected`, `info_requested`, `escalated`, per `lib/claim-status.ts`) — `approved` is the closest analog to the
+  prototype's "fulfilled". The detail response's `events`/`attachments` fields are genuinely untyped in the spec
+  (`additionalProperties: {}`, no field names documented) — `components/claims/claim-timeline.tsx` renders them
+  defensively (best-guess field names with fallbacks, generic key/value dump if nothing matches) and still needs a
+  live check against a real payload once the OTP flow is reachable (untestable in this dev environment — no email
+  inbox access). Detail is a dedicated page, not a Sheet like the registration drawer — too much content (timeline
+  + reply form + attachments) for a slide-over. Claim filing (`POST /claims`, `/claims/new`) and the attachments
+  upload endpoint are explicitly **not** built here — feature 6's scope; proxying multipart uploads would mean
+  touching `lib/warrantini-client.ts`'s JSON-only assumption, a bigger lift than this pass warranted.
 
-### 5. Claims list + detail
-- **Prototype reference:** `design/portal-customer.html:1478-1686` — 3 states (info-requested, in-review,
-  fulfilled) + empty state + claim detail (timeline, info-request banner, reply form).
-- **Routes:** `/claims`, `/claims/{id}`.
-- **Upstream endpoints:** the live spec has both a plain-tier `GET /v1/claims`/`{id}`/`POST .../transition` and a
-  customer-tier `GET/POST /api/v1/customer/claims`, `GET /api/v1/customer/claims/{id}`,
-  `POST /api/v1/customer/claims/{id}/reply` — registrations (feature 2) went with the customer tier since it's
-  pre-scoped server-side and the visitor is already OTP-verified from that flow; likely the right precedent to
-  follow here too (reuse the existing customer session cookie rather than re-authenticating), but confirm against
-  the live spec before assuming the shape matches.
-- **Hard rules that apply:** if using the customer tier (recommended, see above), hard rule 3's `demo_activity`
-  filtering doesn't apply (already scoped by Warrantini); if using the plain tier instead, it does.
+## Up next
 
 ### 6. Claim filing flow
 - **Prototype reference:** `design/portal-customer.html:1687-1904` — select registration → describe issue
@@ -85,8 +87,9 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
 - **Rate limiting** (`lib/rate-limit.ts`) — built in feature 2 (Upstash sliding-window limiters, fails open with
   a console warning if `UPSTASH_REDIS_REST_URL`/`TOKEN` aren't configured). Reuse `checkOtpSendRateLimit`/
   `checkRegistrationsReadRateLimit` or add new limiter instances following the same pattern.
-- **`demo_activity` scoping helpers + Drizzle schema** — still not built. Not needed by features 2, 3, or 4 in
+- **`demo_activity` scoping helpers + Drizzle schema** — still not built. Not needed by features 2, 3, 4, or 5 in
   the end (all customer-tier, or — feature 4's rules table — shared tenant policy config rather than per-visitor
-  data). Feature 3's plain-tier write (`POST /v1/registrations`) is still real and documented but unused; still
-  required by whichever future feature first does a **plain-tier write** (feature 6, or 3/5 if ever redone against
-  the plain tier) — build alongside whichever of those hits it first, then reuse.
+  data). The plain-tier writes documented for features 3/6 (`POST /v1/registrations`, `POST /v1/claims`) are still
+  real and documented but unused; still required by whichever future feature first does a **plain-tier write**
+  (feature 6, or 3/5 if ever redone against the plain tier) — build alongside whichever of those hits it first,
+  then reuse.
