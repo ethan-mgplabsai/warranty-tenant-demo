@@ -2,12 +2,10 @@ import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Select Order", "Select Item", "Confirm"];
-
-export function WizardSteps({ currentStep }: { currentStep: number }) {
+export function WizardSteps({ steps, currentStep }: { steps: string[]; currentStep: number }) {
   return (
     <div className="mb-6 flex items-center">
-      {STEPS.map((label, index) => {
+      {steps.map((label, index) => {
         const stepNumber = index + 1;
         const completed = stepNumber < currentStep;
         const current = stepNumber === currentStep;
@@ -33,7 +31,7 @@ export function WizardSteps({ currentStep }: { currentStep: number }) {
                 {label}
               </span>
             </div>
-            {stepNumber < STEPS.length && (
+            {stepNumber < steps.length && (
               <div className={cn("mx-2 mb-4 h-px flex-1", completed ? "bg-primary" : "bg-border")} />
             )}
           </div>

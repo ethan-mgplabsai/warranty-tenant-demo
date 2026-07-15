@@ -70,15 +70,24 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
   upload endpoint are explicitly **not** built here — feature 6's scope; proxying multipart uploads would mean
   touching `lib/warrantini-client.ts`'s JSON-only assumption, a bigger lift than this pass warranted.
 
-## Up next
+- **Claim filing flow** — `app/claims/new/page.tsx` + `components/claims/{new-claim-view,registration-select-step,
+  describe-issue-step,claim-review-step,claim-success-step}.tsx`. Went with the customer tier
+  (`POST /api/v1/customer/claims`), same reasons as every prior feature; the plain-tier `POST /v1/claims` this doc
+  originally pointed at is still unused. `WizardSteps` (`components/registrations/wizard-steps.tsx`) had its step
+  labels hardcoded — flagged as a reuse blocker in the prior code review — fixed by parameterizing it with a
+  `steps: string[]` prop so both this wizard and the registration one now share it.
 
-### 6. Claim filing flow
-- **Prototype reference:** `design/portal-customer.html:1687-1904` — select registration → describe issue
-  (photo upload, usage input) → review (usage-over-limit warning) → success.
-- **Routes:** `/claims/new`.
-- **Upstream endpoints:** `POST /v1/claims`, `POST /v1/claims/{id}/attachments`.
-- **Hard rules that apply:** scope to a registration the visitor actually owns (rule 2); `Idempotency-Key` on
-  the write; narrated API call panel.
+  **Photo upload is deliberately not built** — flagged to the user before starting: the attachments endpoint's
+  actual upload mechanism is ambiguous in the spec (the plain-tier equivalent is documented as "Request pre-signed
+  upload URL" with an opaque JSON body, not multipart; the customer-tier response shape doesn't clearly disambiguate
+  a completed-record vs. a presigned-URL response), and empirically testing it would mean writing real test data
+  into the live Pergola Cave tenant (`DEMO_API_KEY` is `wrnt_live_...`, not a sandbox key). User chose to skip it.
+  The flow is select registration (only "active" ones selectable, via the existing `getStatusPresentation(...)
+  .clickable`) → describe issue (description, min 20 chars; an optional current-usage input shown only when the
+  registration has a `usageLimitMetric`/`usageLimitValue`; optional notes) → review (usage-over-limit banner is
+  advisory only, never blocks submission, matching the prototype) → submit → success. The API only accepts a
+  single `description` string with no usage/notes fields, so `claim-review-step.tsx` composes usage + notes into
+  the submitted description text rather than silently dropping them.
 
 ## Cross-cutting, tackle whenever it first becomes needed
 
@@ -87,9 +96,8 @@ itself is placeholder-branded as "Trail Supply Co." and needs reskinning, not co
 - **Rate limiting** (`lib/rate-limit.ts`) — built in feature 2 (Upstash sliding-window limiters, fails open with
   a console warning if `UPSTASH_REDIS_REST_URL`/`TOKEN` aren't configured). Reuse `checkOtpSendRateLimit`/
   `checkRegistrationsReadRateLimit` or add new limiter instances following the same pattern.
-- **`demo_activity` scoping helpers + Drizzle schema** — still not built. Not needed by features 2, 3, 4, or 5 in
-  the end (all customer-tier, or — feature 4's rules table — shared tenant policy config rather than per-visitor
-  data). The plain-tier writes documented for features 3/6 (`POST /v1/registrations`, `POST /v1/claims`) are still
-  real and documented but unused; still required by whichever future feature first does a **plain-tier write**
-  (feature 6, or 3/5 if ever redone against the plain tier) — build alongside whichever of those hits it first,
-  then reuse.
+- **`demo_activity` scoping helpers + Drizzle schema** — still not built, and no longer needed by anything in this
+  roadmap as written — every feature ended up customer-tier (or, feature 4's rules table, shared tenant policy
+  config rather than per-visitor data). The plain-tier writes originally assumed for features 3/6
+  (`POST /v1/registrations`, `POST /v1/claims`) are still real and documented but unused. Only build this if a
+  future feature deliberately targets the plain tier instead.

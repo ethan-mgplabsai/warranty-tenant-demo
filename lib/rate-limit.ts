@@ -66,6 +66,11 @@ const claimsReplyLimiter = redis
   ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 m"), prefix: "rl:claims-reply" })
   : null;
 
+// Filing a new claim is a write too — same tighter budget as the other writes.
+const claimsWriteLimiter = redis
+  ? new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(10, "1 m"), prefix: "rl:claims-write" })
+  : null;
+
 export function getClientIp(request: NextRequest): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
   return forwardedFor?.split(",")[0]?.trim() ?? "127.0.0.1";
@@ -131,4 +136,8 @@ export function checkClaimsReadRateLimit(ip: string): Promise<RateLimitResult> {
 
 export function checkClaimsReplyRateLimit(ip: string): Promise<RateLimitResult> {
   return checkRateLimit(claimsReplyLimiter, ip);
+}
+
+export function checkClaimsWriteRateLimit(ip: string): Promise<RateLimitResult> {
+  return checkRateLimit(claimsWriteLimiter, ip);
 }

@@ -64,7 +64,7 @@ export function WizardView() {
         </div>
 
         {(phase === "orders" || phase === "items" || phase === "confirm") && (
-          <WizardSteps currentStep={stepNumber} />
+          <WizardSteps steps={["Select Order", "Select Item", "Confirm"]} currentStep={stepNumber} />
         )}
 
         {phase === "checking" && (
